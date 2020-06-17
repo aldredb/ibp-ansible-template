@@ -1,0 +1,151 @@
+---
+- name: Create Peer Organization
+  hosts: localhost
+  vars_files:
+    - vars/api.yaml
+    - vars/resources.yaml
+    - vars/organizations.yaml
+  vars:
+    # org_name: os # load this using --extra-vars "org_name=<org_key>"
+    - ca_name: "{{ vars['peer_organizations'][org_name]['ca']['name'] }}"
+    - ca_zone: "{{ vars['peer_organizations'][org_name]['ca']['zone'] }}"
+    - ca_admin_name: "{{ vars['peer_organizations'][org_name]['ca']['admin_name'] }}"
+    - ca_admin_enrollment_id: "{{ vars['peer_organizations'][org_name]['ca']['admin_enrollment_id'] }}"
+    - ca_admin_enrollment_secret: "{{ vars['peer_organizations'][org_name]['ca']['admin_enrollment_secret'] }}"
+    - ca_id_list: "{{ vars['peer_organizations'][org_name]['ca']['id_list'] }}"
+    - msp_name: "{{ vars['peer_organizations'][org_name]['msp']['name'] }}"
+    - msp_id: "{{ vars['peer_organizations'][org_name]['msp']['id'] }}"
+    # - peer_list: "{{ vars['peer_organizations'][org_name]['peers'] }}" @TODO
+  tasks:
+    - name: Create certificate authority
+      ibm.blockchain_platform.certificate_authority:
+        state: "{{ state }}"
+        api_endpoint: "{{ api_endpoint }}"
+        api_authtype: "{{ api_authtype }}"
+        api_key: "{{ api_key | default(omit) }}"
+        api_secret: "{{ api_secret | default(omit)}}"
+        name: "{{ ca_name }}"
+        zone: "{{ ca_zone | default(omit) }}"
+        config_override:
+          ca:
+            registry:
+              maxenrollments: -1
+              identities:
+                - name: "{{ ca_admin_enrollment_id }}"
+                  pass: "{{ ca_admin_enrollment_secret }}"
+                  type: client
+                  maxenrollments: -1
+                  attrs:
+                    hf.Registrar.Roles: "*"
+                    hf.Registrar.DelegateRoles: "*"
+                    hf.Revoker: true
+                    hf.IntermediateCA: true
+                    hf.GenCRL: true
+                    hf.Registrar.Attributes: "*"
+                    hf.AffiliationMgr: true
+        resources:
+          ca:
+            requests:
+              cpu: "{{ ca_vcpu }}"
+              memory: "{{ ca_memory }}"
+        storage:
+          ca:
+            size: "{{ ca_storage}}"
+        wait_timeout: "{{ wait_timeout }}"
+
+    - name: Enroll CA admin
+      ibm.blockchain_platform.enrolled_identity:
+        state: "{{ state }}"
+        api_endpoint: "{{ api_endpoint }}"
+        api_authtype: "{{ api_authtype }}"
+        api_key: "{{ api_key | default(omit) }}"
+        api_secret: "{{ api_secret | default(omit)}}"
+        certificate_authority: "{{ ca_name }}"
+        name: "{{ ca_admin_name }}"
+        enrollment_id: "{{ ca_admin_enrollment_id }}"
+        enrollment_secret: "{{ ca_admin_enrollment_secret }}"
+        path: "{{ playbook_dir }}/{{ ca_admin_name }}.json"
+
+    - name: Register org admin, peers and monitoring user
+      ibm.blockchain_platform.registered_identity:
+        state: "{{ state }}"
+        api_endpoint: "{{ api_endpoint }}"
+        api_authtype: "{{ api_authtype }}"
+        api_key: "{{ api_key | default(omit) }}"
+        api_secret: "{{ api_secret | default(omit)}}"
+        certificate_authority: "{{ ca_name }}"
+        registrar: "{{ playbook_dir }}/{{ ca_admin_name }}.json"
+        enrollment_id: "{{ item.enrollment_id }}"
+        enrollment_secret: "{{ item.enrollment_secret }}"
+        type: "{{ item.type }}"
+      loop: "{{ ca_id_list }}"
+
+    - name: Enroll the org admin
+      ibm.blockchain_platform.enrolled_identity:
+        state: "{{ state }}"
+        api_endpoint: "{{ api_endpoint }}"
+        api_authtype: "{{ api_authtype }}"
+        api_key: "{{ api_key | default(omit) }}"
+        api_secret: "{{ api_secret | default(omit)}}"
+        certificate_authority: "{{ ca_name }}"
+        name: "{{ ca_id_list[0].name }}"
+        enrollment_id: "{{ ca_id_list[0].enrollment_id }}"
+        enrollment_secret: "{{ ca_id_list[0].enrollment_secret }}"
+        path: "{{ playbook_dir }}/{{ ca_id_list[0].name }}.json"
+      register: org_admin
+
+    - name: Create organization
+      ibm.blockchain_platform.organization:
+        state: "{{ state }}"
+        api_endpoint: "{{ api_endpoint }}"
+        api_authtype: "{{ api_authtype }}"
+        api_key: "{{ api_key | default(omit) }}"
+        api_secret: "{{ api_secret | default(omit)}}"
+        name: "{{ msp_name }}"
+        msp_id: "{{ msp_id }}"
+        certificate_authority: "{{ ca_name }}"
+        registrar: "{{ playbook_dir }}/{{ ca_admin_name }}.json"
+        admins:
+          - "{{ org_admin.enrolled_identity.cert }}"
+
+    - name: Create peer(s)
+      ibm.blockchain_platform.peer:
+        state: "{{ state }}"
+        api_endpoint: "{{ api_endpoint }}"
+        api_authtype: "{{ api_authtype }}"
+        api_key: "{{ api_key | default(omit) }}"
+        api_secret: "{{ api_secret | default(omit)}}"
+        name: "{{ item.name }}"
+        msp_id: "{{ msp_id }}"
+        state_db: "{{ peer_state_db }}"
+        certificate_authority: "{{ ca_name }}"
+        enrollment_id: "{{ item.enrollment_id }}"
+        enrollment_secret: "{{ item.enrollment_secret }}"
+        admins:
+          - "{{ org_admin.enrolled_identity.cert }}"
+        resources:
+          peer:
+            requests:
+              cpu: "{{ peer_vcpu }}"
+              memory: "{{ peer_memory }}"
+          proxy:
+            requests:
+              cpu: "{{ peer_proxy_vcpu }}"
+              memory: "{{ peer_proxy_memory }}"
+          couchdb:
+            requests:
+              cpu: "{{ peer_couchdb_vcpu }}"
+              memory: "{{ peer_couchdb_memory }}"
+          dind:
+            requests:
+              cpu: "{{ peer_dind_vcpu }}"
+              memory: "{{ peer_dind_memory }}"
+        storage:
+          peer:
+            size: "{{ peer_storage }}"
+          statedb:
+            size: "{{ peer_couchdb_storage }}"
+        wait_timeout: "{{ wait_timeout | default(omit) }}"
+      loop:
+        - "{{ ca_id_list[1] }}"
+        # - "{{ ca_id_list[2] }}"

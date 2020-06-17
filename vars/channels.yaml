@@ -1,0 +1,15 @@
+consortium_members:
+  - Org1 MSP
+  - Org2 MSP
+
+channel1:
+  name: samplechannel1
+  members:
+    - Org1 MSP
+    - Org2 MSP
+
+channel2:
+  name: samplechannel2
+  members:
+  - Org1 MSP
+  - Org2 MSP

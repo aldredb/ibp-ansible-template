@@ -1,0 +1,20 @@
+- name: Deploy IBM Blockchain Platform console
+  hosts: localhost
+  vars:
+    state: present
+    target: openshift
+    arch: amd64
+    project: <project>
+    image_registry_password: <image_registry_password>
+    image_registry_email: <image_registry_email>
+    console_domain: <console_domain>
+    console_email: <console_email>
+    console_default_password: <console_default_password>
+    wait_timeout: 3600
+    # clusterdata:
+    #   zones:
+    #     - <zone_1>
+    #     - <zone_2>
+    #     - <zone_3>
+  roles:
+    - ibm.blockchain_platform.console

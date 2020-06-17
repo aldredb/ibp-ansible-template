@@ -1,0 +1,143 @@
+---
+- name: Create Ordering Service Organization
+  hosts: localhost
+  vars_files:
+    - vars/api.yaml
+    - vars/resources.yaml
+    - vars/organizations.yaml
+  vars:
+    # org_name: os # load this using --extra-vars "org_name=os"
+    - ca_name: "{{ vars['ordering_organization'][org_name]['ca']['name'] }}"
+    - ca_zone: "{{ vars['ordering_organization'][org_name]['ca']['zone'] }}"
+    - ca_admin_name: "{{ vars['ordering_organization'][org_name]['ca']['admin_name'] }}"
+    - ca_admin_enrollment_id: "{{ vars['ordering_organization'][org_name]['ca']['admin_enrollment_id'] }}"
+    - ca_admin_enrollment_secret: "{{ vars['ordering_organization'][org_name]['ca']['admin_enrollment_secret'] }}"
+    - ca_id_list: "{{ vars['ordering_organization'][org_name]['ca']['id_list'] }}"
+    - msp_name: "{{ vars['ordering_organization'][org_name]['msp']['name'] }}"
+    - msp_id: "{{ vars['ordering_organization'][org_name]['msp']['id'] }}"
+    - orderer_name: "{{ vars['ordering_organization'][org_name]['orderer']['name'] }}"
+    - no_of_orderer_nodes: "{{ vars['ordering_organization'][org_name]['orderer']['nodes'] }}"
+    - orderer_enrollment_id: "{{ vars['ordering_organization'][org_name]['orderer']['enrollment_id'] }}"
+    - orderer_enrollment_secret: "{{ vars['ordering_organization'][org_name]['orderer']['enrollment_secret'] }}"
+    - orderer_zones: "{{ vars['ordering_organization'][org_name]['orderer']['zones'] }}"
+  tasks:
+    - name: Create certificate authority
+      ibm.blockchain_platform.certificate_authority:
+        state: "{{ state }}"
+        api_endpoint: "{{ api_endpoint }}"
+        api_authtype: "{{ api_authtype }}"
+        api_key: "{{ api_key | default(omit) }}"
+        api_secret: "{{ api_secret | default(omit)}}"
+        name: "{{ ca_name }}"
+        zone: "{{ ca_zone | default(omit) }}"
+        config_override:
+          ca:
+            registry:
+              maxenrollments: -1
+              identities:
+                - name: "{{ ca_admin_enrollment_id }}"
+                  pass: "{{ ca_admin_enrollment_secret }}"
+                  type: client
+                  maxenrollments: -1
+                  attrs:
+                    hf.Registrar.Roles: "*"
+                    hf.Registrar.DelegateRoles: "*"
+                    hf.Revoker: true
+                    hf.IntermediateCA: true
+                    hf.GenCRL: true
+                    hf.Registrar.Attributes: "*"
+                    hf.AffiliationMgr: true
+        resources:
+          ca:
+            requests:
+              cpu: "{{ ca_vcpu }}"
+              memory: "{{ ca_memory }}"
+        storage:
+          ca:
+            size: "{{ ca_storage}}"
+        wait_timeout: "{{ wait_timeout }}"
+
+    - name: Enroll CA admin
+      ibm.blockchain_platform.enrolled_identity:
+        state: "{{ state }}"
+        api_endpoint: "{{ api_endpoint }}"
+        api_authtype: "{{ api_authtype }}"
+        api_key: "{{ api_key | default(omit) }}"
+        api_secret: "{{ api_secret | default(omit)}}"
+        certificate_authority: "{{ ca_name }}"
+        name: "{{ ca_admin_name }}"
+        enrollment_id: "{{ ca_admin_enrollment_id }}"
+        enrollment_secret: "{{ ca_admin_enrollment_secret }}"
+        path: "{{ playbook_dir }}/{{ ca_admin_name }}.json"
+
+    - name: Register org admin, orderer and monitoring user
+      ibm.blockchain_platform.registered_identity:
+        state: "{{ state }}"
+        api_endpoint: "{{ api_endpoint }}"
+        api_authtype: "{{ api_authtype }}"
+        api_key: "{{ api_key | default(omit) }}"
+        api_secret: "{{ api_secret | default(omit)}}"
+        certificate_authority: "{{ ca_name }}"
+        registrar: "{{ playbook_dir }}/{{ ca_admin_name }}.json"
+        enrollment_id: "{{ item.enrollment_id }}"
+        enrollment_secret: "{{ item.enrollment_secret }}"
+        type: "{{ item.type }}"
+      loop: "{{ ca_id_list }}"
+
+    - name: Enroll the org admin
+      ibm.blockchain_platform.enrolled_identity:
+        state: "{{ state }}"
+        api_endpoint: "{{ api_endpoint }}"
+        api_authtype: "{{ api_authtype }}"
+        api_key: "{{ api_key | default(omit) }}"
+        api_secret: "{{ api_secret | default(omit)}}"
+        certificate_authority: "{{ ca_name }}"
+        name: "{{ ca_id_list[0].name }}"
+        enrollment_id: "{{ ca_id_list[0].enrollment_id }}"
+        enrollment_secret: "{{ ca_id_list[0].enrollment_secret }}"
+        path: "{{ playbook_dir }}/{{ ca_id_list[0].name }}.json"
+      register: org_admin
+
+    - name: Create organization
+      ibm.blockchain_platform.organization:
+        state: "{{ state }}"
+        api_endpoint: "{{ api_endpoint }}"
+        api_authtype: "{{ api_authtype }}"
+        api_key: "{{ api_key | default(omit) }}"
+        api_secret: "{{ api_secret | default(omit)}}"
+        name: "{{ msp_name }}"
+        msp_id: "{{ msp_id }}"
+        certificate_authority: "{{ ca_name }}"
+        registrar: "{{ playbook_dir }}/{{ ca_admin_name }}.json"
+        admins:
+          - "{{ org_admin.enrolled_identity.cert }}"
+
+    - name: Create ordering service
+      ibm.blockchain_platform.ordering_service:
+        state: "{{ state }}"
+        api_endpoint: "{{ api_endpoint }}"
+        api_authtype: "{{ api_authtype }}"
+        api_key: "{{ api_key }}"
+        api_secret: "{{ api_secret | default(omit) }}"
+        name: "{{ orderer_name }}"
+        msp_id: "{{ msp_id }}"
+        nodes: "{{ no_of_orderer_nodes }}"
+        zone: "{{ orderer_zones | default(omit) }}"
+        certificate_authority: "{{ ca_name }}"
+        enrollment_id: "{{ orderer_enrollment_id }}"
+        enrollment_secret: "{{ orderer_enrollment_secret }}"
+        admin_certificates:
+          - "{{ org_admin.enrolled_identity.cert }}"
+        resources:
+          orderer:
+            requests:
+              cpu: "{{ orderer_vcpu }}"
+              memory: "{{ orderer_memory }}"
+          proxy:
+            requests:
+              cpu: "{{ orderer_proxy_vcpu }}"
+              memory: "{{ orderer_proxy_memory }}"
+        storage:
+          orderer:
+            size: "{{ orderer_storage }}"
+        wait_timeout: "{{ wait_timeout | default(omit) }}"
