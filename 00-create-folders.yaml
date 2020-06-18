@@ -13,3 +13,8 @@
         path: "{{ playbook_dir }}/{{ connection_profile_path }}"
         state: directory
         mode: '0755'
+    - name: Create wallet folder
+      file:
+        path: "{{ playbook_dir }}/{{ wallet_path }}"
+        state: directory
+        mode: '0755'

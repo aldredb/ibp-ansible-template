@@ -4,19 +4,10 @@
   vars_files:
     - vars/common.yaml
     - vars/api.yaml
-    - vars/resources.yaml
     - vars/organizations.yaml
   vars:
-    # org_name: org1 # load this using --extra-vars "org_name=<org_key>"
-    - ca_name: "{{ vars['peer_organizations'][org_name]['ca']['name'] }}"
-    - ca_zone: "{{ vars['peer_organizations'][org_name]['ca']['zone'] }}"
-    - ca_admin_name: "{{ vars['peer_organizations'][org_name]['ca']['admin_name'] }}"
-    - ca_admin_enrollment_id: "{{ vars['peer_organizations'][org_name]['ca']['admin_enrollment_id'] }}"
-    - ca_admin_enrollment_secret: "{{ vars['peer_organizations'][org_name]['ca']['admin_enrollment_secret'] }}"
-    - ca_id_list: "{{ vars['peer_organizations'][org_name]['ca']['id_list'] }}"
-    - msp_name: "{{ vars['peer_organizations'][org_name]['msp']['name'] }}"
-    - msp_id: "{{ vars['peer_organizations'][org_name]['msp']['id'] }}"
-    - peers: "{{ vars['peer_organizations'][org_name]['peers'] }}" 
+    # org_name: org1
+    - org: "{{ vars['peer_organizations'][org_name] }}"
   tasks:
     - name: Create certificate authority
       ibm.blockchain_platform.certificate_authority:
@@ -25,15 +16,15 @@
         api_authtype: "{{ api_authtype }}"
         api_key: "{{ api_key | default(omit) }}"
         api_secret: "{{ api_secret | default(omit)}}"
-        name: "{{ ca_name }}"
-        zone: "{{ ca_zone | default(omit) }}"
+        name: "{{ org.ca.name }}"
+        zone: "{{ org.ca.zone | default(omit) }}"
         config_override:
           ca:
             registry:
               maxenrollments: -1
               identities:
-                - name: "{{ ca_admin_enrollment_id }}"
-                  pass: "{{ ca_admin_enrollment_secret }}"
+                - name: "{{ org.ca.admin_enrollment_id }}"
+                  pass: "{{ org.ca.admin_enrollment_secret }}"
                   type: client
                   maxenrollments: -1
                   attrs:
@@ -47,12 +38,12 @@
         resources:
           ca:
             requests:
-              cpu: "{{ ca_vcpu }}"
-              memory: "{{ ca_memory }}"
+              cpu: "{{ org.ca.resource.vcpu | default('100m') }}"
+              memory: "{{ org.ca.resource.memory | default('200M') }}"
         storage:
           ca:
-            size: "{{ ca_storage}}"
-        wait_timeout: "{{ wait_timeout }}"
+            size: "{{ org.ca.resource.storage | default('20Gi') }}"
+        wait_timeout: "{{ wait_timeout | default(900) }}"
 
     - name: Enroll CA admin
       ibm.blockchain_platform.enrolled_identity:
@@ -61,11 +52,11 @@
         api_authtype: "{{ api_authtype }}"
         api_key: "{{ api_key | default(omit) }}"
         api_secret: "{{ api_secret | default(omit)}}"
-        certificate_authority: "{{ ca_name }}"
-        name: "{{ ca_admin_name }}"
-        enrollment_id: "{{ ca_admin_enrollment_id }}"
-        enrollment_secret: "{{ ca_admin_enrollment_secret }}"
-        path: "{{ playbook_dir }}/{{ ca_admin_name }}_identity.json"
+        certificate_authority: "{{ org.ca.name }}"
+        name: "{{ org.ca.admin_name }}"
+        enrollment_id: "{{ org.ca.admin_enrollment_id }}"
+        enrollment_secret: "{{ org.ca.admin_enrollment_secret }}"
+        path: "{{ playbook_dir }}/{{ wallet_path }}/{{ org.ca.admin_name }}.json"
 
     - name: Register org admin, peers and monitoring user
       ibm.blockchain_platform.registered_identity:
@@ -74,12 +65,12 @@
         api_authtype: "{{ api_authtype }}"
         api_key: "{{ api_key | default(omit) }}"
         api_secret: "{{ api_secret | default(omit)}}"
-        certificate_authority: "{{ ca_name }}"
-        registrar: "{{ playbook_dir }}/{{ ca_admin_name }}_identity.json"
+        certificate_authority: "{{ org.ca.name }}"
+        registrar: "{{ playbook_dir }}/{{ wallet_path }}/{{ org.ca.admin_name }}.json"
         enrollment_id: "{{ item.enrollment_id }}"
         enrollment_secret: "{{ item.enrollment_secret }}"
         type: "{{ item.type }}"
-      loop: "{{ ca_id_list }}"
+      loop: "{{ org.ca.id_list }}"
 
     - name: Enroll the org admin
       ibm.blockchain_platform.enrolled_identity:
@@ -88,11 +79,13 @@
         api_authtype: "{{ api_authtype }}"
         api_key: "{{ api_key | default(omit) }}"
         api_secret: "{{ api_secret | default(omit)}}"
-        certificate_authority: "{{ ca_name }}"
-        name: "{{ ca_id_list[0].name }}"
-        enrollment_id: "{{ ca_id_list[0].enrollment_id }}"
-        enrollment_secret: "{{ ca_id_list[0].enrollment_secret }}"
-        path: "{{ playbook_dir }}/{{ ca_id_list[0].name }}_identity.json"
+        certificate_authority: "{{ org.ca.name }}"
+        name: "{{ org.msp.admin }}"
+        enrollment_id: "{{ msp_admin_info[0].enrollment_id }}"
+        enrollment_secret: "{{ msp_admin_info[0].enrollment_secret }}"
+        path: "{{ playbook_dir }}/{{ wallet_path }}/{{ org.msp.admin }}.json"
+      vars:
+        msp_admin_info: "{{ org.ca.id_list | selectattr('name', 'equalto', org.msp.admin) | list }}"
       register: org_admin
 
     - name: Create organization
@@ -102,12 +95,19 @@
         api_authtype: "{{ api_authtype }}"
         api_key: "{{ api_key | default(omit) }}"
         api_secret: "{{ api_secret | default(omit)}}"
-        name: "{{ msp_name }}"
-        msp_id: "{{ msp_id }}"
-        certificate_authority: "{{ ca_name }}"
-        registrar: "{{ playbook_dir }}/{{ ca_admin_name }}_identity.json"
+        name: "{{ org.msp.name }}"
+        msp_id: "{{ org.msp.id }}"
+        certificate_authority: "{{ org.ca.name }}"
+        registrar: "{{ playbook_dir }}/{{ wallet_path }}/{{ org.ca.admin_name }}.json"
         admins:
           - "{{ org_admin.enrolled_identity.cert }}"
+
+    - name: Construct peer complete information list
+      set_fact: 
+        # Merge information in org.peers and org.ca.id_list 
+        peer_complete_info_list: "{{ peer_complete_info_list | default([]) + [org.peers | selectattr('name','equalto', item) | first | combine(org.ca.id_list | selectattr('name','equalto', item) | first)] }}"
+      with_items: 
+      - "{{ org.peers | map(attribute='name') | list }}"
 
     - name: Create peer(s)
       ibm.blockchain_platform.peer:
@@ -117,9 +117,10 @@
         api_key: "{{ api_key | default(omit) }}"
         api_secret: "{{ api_secret | default(omit)}}"
         name: "{{ item.name }}"
-        msp_id: "{{ msp_id }}"
-        state_db: "{{ peer_state_db }}"
-        certificate_authority: "{{ ca_name }}"
+        msp_id: "{{ org.msp.id }}"
+        state_db: "{{ item.state_db }}"
+        zone: "{{ item.zone | default(omit) }}"
+        certificate_authority: "{{ org.ca.name }}"
         enrollment_id: "{{ item.enrollment_id }}"
         enrollment_secret: "{{ item.enrollment_secret }}"
         admins:
@@ -127,29 +128,25 @@
         resources:
           peer:
             requests:
-              cpu: "{{ peer_vcpu }}"
-              memory: "{{ peer_memory }}"
+              cpu: "{{ item.resource.peer.vcpu | default('300m') }}"
+              memory: "{{ item.resource.peer.memory | default('300M') }}"
           proxy:
             requests:
-              cpu: "{{ peer_proxy_vcpu }}"
-              memory: "{{ peer_proxy_memory }}"
+              cpu: "{{ item.resource.proxy.vcpu | default('100m') }}"
+              memory: "{{ item.resource.proxy.memory | default('200M') }}"
           couchdb:
             requests:
-              cpu: "{{ peer_couchdb_vcpu }}"
-              memory: "{{ peer_couchdb_memory }}"
+              cpu: "{{ item.resource.couchdb.vcpu | default('300m') }}"
+              memory: "{{ item.resource.couchdb.memory | default('300M') }}"
           dind:
             requests:
-              cpu: "{{ peer_dind_vcpu }}"
-              memory: "{{ peer_dind_memory }}"
+              cpu: "{{ item.resource.dind.vcpu | default('300m') }}"
+              memory: "{{ item.resource.dind.memory | default('300m') }}"
         storage:
           peer:
-            size: "{{ peer_storage }}"
+            size: "{{ item.resource.peer.storage | default('100Gi') }}"
           statedb:
-            size: "{{ peer_couchdb_storage }}"
-        wait_timeout: "{{ wait_timeout | default(omit) }}"
-      vars: 
-        peer_list: "{{ ca_id_list |
-                      selectattr('name', 'in', peers)|
-                      list }}"
+            size: "{{ item.resource.couchdb.storage | default('100Gi') }}"
+        wait_timeout: "{{ wait_timeout | default(1800) }}"
       with_items:
-        - "{{ peer_list }}"
+        - "{{ peer_complete_info_list }}"

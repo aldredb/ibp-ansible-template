@@ -1,18 +1,24 @@
 ---
 - name: Zip identities to wallet
   hosts: localhost
+  vars_files:
+    - vars/common.yaml
   tasks:
-    - name: Create Wallet folder
+    - name: Create Bulk import folder
       file:
-        path: "{{ playbook_dir }}/Wallet"
+        path: "{{ playbook_dir }}/bulk-import"
         state: directory
         mode: '0755'
-    - name: Insert `identity` field and insert identity JSON files to Wallet folder
-      shell: "cat '{{ item }}' | jq '. + {type: \"identity\"}' > '{{ playbook_dir }}/Wallet/{{ item | basename }}'"
+    - name: Insert `identity` field and insert identity JSON files to Bulk import folder
+      shell: "cat '{{ item }}' | jq '. + {type: \"identity\"}' > '{{ playbook_dir }}/bulk-import/{{ item | basename }}'"
       with_fileglob:
-        - "{{ playbook_dir }}/*_identity.json"
-    - name: Create a zip archive of {{ playbook_dir }}/Wallet
+        - "{{ playbook_dir }}/{{ wallet_path }}/*.json"
+    - name: Create a zip archive of {{ playbook_dir }}/bulk-import
       archive:
-        path: "{{ playbook_dir }}/Wallet"
+        path: "{{ playbook_dir }}/bulk-import"
         format: zip
-        dest: "{{ playbook_dir }}/Wallet.zip"
+        dest: "{{ playbook_dir }}/bulk-import.zip"
+    - name: Delete Bulk import folder
+      file:
+        path: "{{ playbook_dir }}/bulk-import"
+        state: absent

@@ -7,14 +7,13 @@
     - vars/organizations.yaml
     - vars/channels.yaml
   vars:
-    # os_org_name: os # load this using --extra-vars "os_org_name=os"
-    # creator_org_name: org1 # load this using --extra-vars "creator_org_name=org1"
-    # channel_name: samplechannel1 # load this using --extra-vars "channel_name=samplechannel1"
-    ordering_service_name: "{{ vars['ordering_organization'][os_org_name]['orderer']['name'] }}"
-    ordering_service_msp_admin: "{{ vars['ordering_organization'][os_org_name]['msp']['admin'] }}{{ identity_prefix }}.json"
-    ordering_service_msp_id: "{{ vars['ordering_organization'][os_org_name]['msp']['id'] }}"
-    creator_msp_admin: "{{ vars['peer_organizations'][creator_org_name]['msp']['admin'] }}{{ identity_prefix }}.json"
-    creator_msp_id: "{{ vars['peer_organizations'][creator_org_name]['msp']['id'] }}"
+    # os_org_name: os
+    # creator_org_name: org1
+    # channel_name: samplechannel1
+    os_org: "{{ vars['ordering_organization'][os_org_name] }}"
+    creator_org: "{{ vars['peer_organizations'][creator_org_name] }}"
+    ordering_service_msp_admin: "{{ playbook_dir }}/{{ wallet_path }}/{{ os_org.msp.admin }}.json"
+    creator_org_msp_admin: "{{ playbook_dir }}/{{ wallet_path }}/{{ creator_org.msp.admin }}.json"
     channel: "{{ vars['channels'][channel_name] }}"
   tasks:
     - name: Check to see if the channel already exists
@@ -25,12 +24,12 @@
         api_secret: "{{ api_secret | default(omit) }}"
         api_token_endpoint: "{{ api_token_endpoint | default(omit) }}"
         operation: fetch
-        ordering_service: "{{ ordering_service_name }}"
+        ordering_service: "{{ os_org.orderer.name }}"
         identity: "{{ ordering_service_msp_admin }}"
-        msp_id: "{{ ordering_service_msp_id }}"
+        msp_id: "{{ os_org.msp.id }}"
         name: "{{ channel_name }}"
         target: "0"
-        path: "{{ channel_name }}_genesis_block.bin"
+        path: "{{ channel_config_path }}/{{ channel_name }}_genesis_block.bin"
       register: result
       failed_when: result.msg is defined and 'NOT_FOUND' not in result.msg
 
@@ -43,7 +42,7 @@
         api_token_endpoint: "{{ api_token_endpoint | default(omit) }}"
         operation: create
         name: "{{ channel_name }}"
-        path: "{{ channel_name }}_config_update.bin"
+        path: "{{ channel_config_path }}/{{ channel_name }}_config_update.bin"
         organizations: "{{ channel_members }}" 
         policies:
           Admins: "{{ playbook_dir }}/channel-policies/{{ channel_name }}/admins-policy.json"
@@ -63,10 +62,10 @@
     - name: Sign the channel configuration update for the new channel
       ibm.blockchain_platform.channel_config:
         operation: sign_update
-        identity: "{{ creator_msp_admin }}"
-        msp_id: "{{ creator_msp_id }}"
+        identity: "{{ creator_org_msp_admin }}"
+        msp_id: "{{ creator_org.msp.id }}"
         name: "{{ channel_name }}"
-        path: "{{ channel_name }}_config_update.bin"
+        path: "{{ channel_config_path }}/{{ channel_name }}_config_update.bin"
       when: result.msg is defined and 'NOT_FOUND' in result.msg
     
     - name: Apply the channel configuration update for the new channel
@@ -77,9 +76,9 @@
         api_secret: "{{ api_secret | default(omit) }}"
         api_token_endpoint: "{{ api_token_endpoint | default(omit) }}"
         operation: apply_update
-        ordering_service: "{{ ordering_service_name }}"
-        identity: "{{ creator_msp_admin }}"
-        msp_id: "{{ creator_msp_id }}"
+        ordering_service: "{{ os_org.orderer.name }}"
+        identity: "{{ creator_org_msp_admin }}"
+        msp_id: "{{ creator_org.msp.id }}"
         name: "{{ channel_name }}"
-        path: "{{ channel_name }}_config_update.bin"
+        path: "{{ channel_config_path }}/{{ channel_name }}_config_update.bin"
       when: result.msg is defined and 'NOT_FOUND' in result.msg

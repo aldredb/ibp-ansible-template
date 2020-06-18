@@ -1,15 +1,14 @@
 .DS_Store
 .metals
 .vscode
-# ignore all JSON wallet identity files
-*_identity.json
 install-ibp.yaml
 *.bin
-Wallet/
+# ignore all JSON wallet identity files
+wallet/
 Wallet.zip
-spike*
 config/
 connection-profiles/
+spike*
 
 # NOTE: uncomment in Production since vars/ contains secrets
 # vars

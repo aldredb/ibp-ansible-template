@@ -95,7 +95,6 @@ ansible-playbook 05-join-peers-to-channel.yaml --extra-vars "channel_name=sample
 ansible-playbook 05-join-peers-to-channel.yaml --extra-vars "channel_name=samplechannel1 os_org_name=os peer_org_name=org2" -v
 
 ansible-playbook 05-join-peers-to-channel.yaml --extra-vars "channel_name=samplechannel2 os_org_name=os peer_org_name=org1" -v
-ansible-playbook 05-join-peers-to-channel.yaml --extra-vars "channel_name=samplechannel2 os_org_name=os peer_org_name=org2" -v
 
 ansible-playbook 06-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=samplechannel1 os_org_name=os peer_org_name=org1" -v
 ansible-playbook 06-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=samplechannel1 os_org_name=os peer_org_name=org2" -v
@@ -107,7 +106,7 @@ ansible-playbook 06-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=s
 ansible-playbook 07-install-chaincode.yaml --extra-vars "peer_org_name=org1 cc_path=chaincode/marbles@v1.cds"
 ansible-playbook 07-install-chaincode.yaml --extra-vars "peer_org_name=org2 cc_path=chaincode/marbles@v1.cds"
 
-ansible-playbook 08-instantiate-chaincode.yaml --extra-vars "peer_org_name=org1 channel_name=samplechannel1 cc_name=marbles cc_ver=v1 cc_endorsement_policy=OR('Org1MSP.peer','Org2MSP.peer')"
+ansible-playbook 08-instantiate-chaincode.yaml --extra-vars "peer_org_name=org1 channel_name=samplechannel1 cc_name=marbles cc_ver=v1 cc_endorsement_policy=OR('org1msp.peer','org2msp.peer')"
 ```
 
 ### Create connection profile
@@ -122,4 +121,4 @@ ansible-playbook 09-create-connection-profile.yaml --extra-vars "peer_org_name=o
 ansible-playbook 99-zip-identities-to-wallet.yaml
 ```
 
-Import `Wallet.zip` to IBP Console
+Import `bulk-import.zip` to IBP Console

@@ -13,7 +13,7 @@
     # channel_name: samplechannel1
     # cc_name: marbles
     # cc_ver: v1
-    # cc_endorsement_policy: OR('Org1MSP.peer','Org2MSP.peer')
+    # cc_endorsement_policy: OR('org1msp.peer','org2msp.peer')
     # cc_collections_config: 
     # cc_init_func: init
     # cc_init_args: 

@@ -7,10 +7,9 @@
     - vars/organizations.yaml
     - vars/channels.yaml
   vars:
-    # os_org_name: os # load this using --extra-vars "os_org_name=os"
-    ordering_service_name: "{{ vars['ordering_organization'][os_org_name]['orderer']['name'] }}"
-    ordering_service_msp_admin: "{{ vars['ordering_organization'][os_org_name]['msp']['admin'] }}{{ identity_prefix }}.json"
-    ordering_service_msp_id: "{{ vars['ordering_organization'][os_org_name]['msp']['id'] }}"
+    # os_org_name: os
+    org: "{{ vars['ordering_organization'][os_org_name] }}"
+    ordering_service_msp_admin: "{{ playbook_dir }}/{{ wallet_path }}/{{ org.msp.admin }}.json"
   tasks:
     - name: Get the ordering service information
       ibm.blockchain_platform.ordering_service_info:
@@ -18,12 +17,12 @@
         api_authtype: "{{ api_authtype }}"
         api_key: "{{ api_key | default(omit) }}"
         api_secret: "{{ api_secret | default(omit)}}"
-        name: "{{ ordering_service_name }}"
+        name: "{{ org.orderer.name }}"
       register: os_info
 
     - name: Fail if ordering service does not exist
       fail:
-        msg: "{{ ordering_service_name }} does not exist"
+        msg: "{{ org.orderer.name }} does not exist"
       when: not os_info.exists
 
     - name: Fetch the system channel configuration
@@ -33,16 +32,16 @@
         api_key: "{{ api_key }}"
         api_secret: "{{ api_secret | default(omit) }}"
         operation: fetch
-        ordering_service: "{{ ordering_service_name }}"
+        ordering_service: "{{ org.orderer.name }}"
         identity: "{{ ordering_service_msp_admin }}"
-        msp_id: "{{ ordering_service_msp_id }}"
+        msp_id: "{{ org.msp.id }}"
         name: "{{ os_info.ordering_service[0].system_channel_id }}"
-        path: original_config.bin
+        path: "{{ channel_config_path }}/original_config.bin"
 
     - name: Create a copy of the system channel configuration
       copy:
-        src: original_config.bin
-        dest: updated_config.bin
+        src: "{{ channel_config_path }}/original_config.bin"
+        dest: "{{ channel_config_path }}/updated_config.bin"
 
     - name: Add the organization to the consortium
       ibm.blockchain_platform.consortium_member:
@@ -53,7 +52,7 @@
         api_secret: "{{ api_secret | default(omit) }}"
         api_token_endpoint: "{{ api_token_endpoint | default(omit) }}"
         organization: "{{ peer_organizations[item].msp.name }}"
-        path: updated_config.bin
+        path: "{{ channel_config_path }}/updated_config.bin"
       loop: "{{ consortium_members }}"
 
     - name: Compute the system channel configuration update
@@ -63,22 +62,22 @@
         api_key: "{{ api_key }}"
         api_secret: "{{ api_secret | default(omit) }}"
         operation: compute_update
-        ordering_service: "{{ ordering_service_name }}"
+        ordering_service: "{{ org.orderer.name }}"
         identity: "{{ ordering_service_msp_admin }}"
-        msp_id: "{{ ordering_service_msp_id }}"
+        msp_id: "{{ org.msp.id }}"
         name: "{{ os_info.ordering_service[0].system_channel_id }}"
-        original: original_config.bin
-        updated: updated_config.bin
-        path: config_update.bin
+        original: "{{ channel_config_path }}/original_config.bin"
+        updated: "{{ channel_config_path }}/updated_config.bin"
+        path: "{{ channel_config_path }}/config_update.bin"
       register: compute_update
 
     - name: Sign the system channel configuration update
       ibm.blockchain_platform.channel_config:
         operation: sign_update
         identity: "{{ ordering_service_msp_admin }}"
-        msp_id: "{{ ordering_service_msp_id }}"
+        msp_id: "{{ org.msp.id }}"
         name: "{{ os_info.ordering_service[0].system_channel_id }}"
-        path: config_update.bin
+        path: "{{ channel_config_path }}/config_update.bin"
       when: compute_update.path
 
     - name: Apply the system channel configuration update
@@ -88,9 +87,9 @@
         api_key: "{{ api_key }}"
         api_secret: "{{ api_secret | default(omit) }}"
         operation: apply_update
-        ordering_service: "{{ ordering_service_name }}"
+        ordering_service: "{{ org.orderer.name }}"
         identity: "{{ ordering_service_msp_admin }}"
-        msp_id: "{{ ordering_service_msp_id }}"
+        msp_id: "{{ org.msp.id }}"
         name: "{{ os_info.ordering_service[0].system_channel_id }}"
-        path: config_update.bin
+        path: "{{ channel_config_path }}/config_update.bin"
       when: compute_update.path
