@@ -4,23 +4,10 @@
   vars_files:
     - vars/common.yaml
     - vars/api.yaml
-    - vars/resources.yaml
     - vars/organizations.yaml
   vars:
-    # org_name: os # load this using --extra-vars "org_name=os"
-    - ca_name: "{{ vars['ordering_organization'][org_name]['ca']['name'] }}"
-    - ca_zone: "{{ vars['ordering_organization'][org_name]['ca']['zone'] }}"
-    - ca_admin_name: "{{ vars['ordering_organization'][org_name]['ca']['admin_name'] }}"
-    - ca_admin_enrollment_id: "{{ vars['ordering_organization'][org_name]['ca']['admin_enrollment_id'] }}"
-    - ca_admin_enrollment_secret: "{{ vars['ordering_organization'][org_name]['ca']['admin_enrollment_secret'] }}"
-    - ca_id_list: "{{ vars['ordering_organization'][org_name]['ca']['id_list'] }}"
-    - msp_name: "{{ vars['ordering_organization'][org_name]['msp']['name'] }}"
-    - msp_id: "{{ vars['ordering_organization'][org_name]['msp']['id'] }}"
-    - orderer_name: "{{ vars['ordering_organization'][org_name]['orderer']['name'] }}"
-    - no_of_orderer_nodes: "{{ vars['ordering_organization'][org_name]['orderer']['nodes'] }}"
-    - orderer_enrollment_id: "{{ vars['ordering_organization'][org_name]['orderer']['enrollment_id'] }}"
-    - orderer_enrollment_secret: "{{ vars['ordering_organization'][org_name]['orderer']['enrollment_secret'] }}"
-    - orderer_zones: "{{ vars['ordering_organization'][org_name]['orderer']['zones'] }}"
+    # org_name: os
+    - org: "{{ vars['ordering_organization'][org_name] }}"
   tasks:
     - name: Create certificate authority
       ibm.blockchain_platform.certificate_authority:
@@ -29,15 +16,15 @@
         api_authtype: "{{ api_authtype }}"
         api_key: "{{ api_key | default(omit) }}"
         api_secret: "{{ api_secret | default(omit)}}"
-        name: "{{ ca_name }}"
-        zone: "{{ ca_zone | default(omit) }}"
+        name: "{{ org.ca.name }}"
+        zone: "{{ org.ca.zone | default(omit) }}"
         config_override:
           ca:
             registry:
               maxenrollments: -1
               identities:
-                - name: "{{ ca_admin_enrollment_id }}"
-                  pass: "{{ ca_admin_enrollment_secret }}"
+                - name: "{{ org.ca.admin_enrollment_id }}"
+                  pass: "{{ org.ca.admin_enrollment_secret }}"
                   type: client
                   maxenrollments: -1
                   attrs:
@@ -51,12 +38,12 @@
         resources:
           ca:
             requests:
-              cpu: "{{ ca_vcpu }}"
-              memory: "{{ ca_memory }}"
+              cpu: "{{ org.ca.resource.vcpu | default('100m') }}"
+              memory: "{{ org.ca.resource.memory | default('200M') }}"
         storage:
           ca:
-            size: "{{ ca_storage}}"
-        wait_timeout: "{{ wait_timeout }}"
+            size: "{{ org.ca.resource.storage | default('20Gi') }}"
+        wait_timeout: "{{ wait_timeout | default(900) }}"
 
     - name: Enroll CA admin
       ibm.blockchain_platform.enrolled_identity:
@@ -65,11 +52,11 @@
         api_authtype: "{{ api_authtype }}"
         api_key: "{{ api_key | default(omit) }}"
         api_secret: "{{ api_secret | default(omit)}}"
-        certificate_authority: "{{ ca_name }}"
-        name: "{{ ca_admin_name }}"
-        enrollment_id: "{{ ca_admin_enrollment_id }}"
-        enrollment_secret: "{{ ca_admin_enrollment_secret }}"
-        path: "{{ playbook_dir }}/{{ ca_admin_name }}_identity.json"
+        certificate_authority: "{{ org.ca.name }}"
+        name: "{{ org.ca.admin_name }}"
+        enrollment_id: "{{ org.ca.admin_enrollment_id }}"
+        enrollment_secret: "{{ org.ca.admin_enrollment_secret }}"
+        path: "{{ playbook_dir }}/{{ wallet_path }}/{{ org.ca.admin_name }}.json"
 
     - name: Register org admin, orderer and monitoring user
       ibm.blockchain_platform.registered_identity:
@@ -78,12 +65,12 @@
         api_authtype: "{{ api_authtype }}"
         api_key: "{{ api_key | default(omit) }}"
         api_secret: "{{ api_secret | default(omit)}}"
-        certificate_authority: "{{ ca_name }}"
-        registrar: "{{ playbook_dir }}/{{ ca_admin_name }}.json"
+        certificate_authority: "{{ org.ca.name }}"
+        registrar: "{{ playbook_dir }}/{{ wallet_path }}/{{ org.ca.admin_name }}.json"
         enrollment_id: "{{ item.enrollment_id }}"
         enrollment_secret: "{{ item.enrollment_secret }}"
         type: "{{ item.type }}"
-      loop: "{{ ca_id_list }}"
+      loop: "{{ org.ca.id_list }}"
 
     - name: Enroll the org admin
       ibm.blockchain_platform.enrolled_identity:
@@ -92,11 +79,13 @@
         api_authtype: "{{ api_authtype }}"
         api_key: "{{ api_key | default(omit) }}"
         api_secret: "{{ api_secret | default(omit)}}"
-        certificate_authority: "{{ ca_name }}"
-        name: "{{ ca_id_list[0].name }}"
-        enrollment_id: "{{ ca_id_list[0].enrollment_id }}"
-        enrollment_secret: "{{ ca_id_list[0].enrollment_secret }}"
-        path: "{{ playbook_dir }}/{{ ca_id_list[0].name }}_identity.json"
+        certificate_authority: "{{ org.ca.name }}"
+        name: "{{ org.msp.admin }}"
+        enrollment_id: "{{ msp_admin_info[0].enrollment_id }}"
+        enrollment_secret: "{{ msp_admin_info[0].enrollment_secret }}"
+        path: "{{ playbook_dir }}/{{ wallet_path }}/{{ org.msp.admin }}.json"
+      vars:
+        msp_admin_info: "{{ org.ca.id_list | selectattr('name', 'equalto', org.msp.admin) | list }}"
       register: org_admin
 
     - name: Create organization
@@ -106,10 +95,10 @@
         api_authtype: "{{ api_authtype }}"
         api_key: "{{ api_key | default(omit) }}"
         api_secret: "{{ api_secret | default(omit)}}"
-        name: "{{ msp_name }}"
-        msp_id: "{{ msp_id }}"
-        certificate_authority: "{{ ca_name }}"
-        registrar: "{{ playbook_dir }}/{{ ca_admin_name }}_identity.json"
+        name: "{{ org.msp.name }}"
+        msp_id: "{{ org.msp.id }}"
+        certificate_authority: "{{ org.ca.name }}"
+        registrar: "{{ playbook_dir }}/{{ wallet_path }}/{{ org.ca.admin_name }}.json"
         admins:
           - "{{ org_admin.enrolled_identity.cert }}"
 
@@ -120,25 +109,25 @@
         api_authtype: "{{ api_authtype }}"
         api_key: "{{ api_key }}"
         api_secret: "{{ api_secret | default(omit) }}"
-        name: "{{ orderer_name }}"
-        msp_id: "{{ msp_id }}"
-        nodes: "{{ no_of_orderer_nodes }}"
-        zone: "{{ orderer_zones | default(omit) }}"
-        certificate_authority: "{{ ca_name }}"
-        enrollment_id: "{{ orderer_enrollment_id }}"
-        enrollment_secret: "{{ orderer_enrollment_secret }}"
+        name: "{{ org.orderer.name }}"
+        msp_id: "{{ org.msp.id }}"
+        nodes: "{{ org.orderer.nodes }}"
+        zone: "{{ org.orderer.zones | default(omit) }}"
+        certificate_authority: "{{ org.ca.name }}"
+        enrollment_id: "{{ org.orderer.enrollment_id }}"
+        enrollment_secret: "{{ org.orderer.enrollment_secret }}"
         admin_certificates:
           - "{{ org_admin.enrolled_identity.cert }}"
         resources:
           orderer:
             requests:
-              cpu: "{{ orderer_vcpu }}"
-              memory: "{{ orderer_memory }}"
+              cpu: "{{ org.orderer.resource.orderer.vcpu | default('350m') }}"
+              memory: "{{ org.orderer.resource.orderer.memory | default('400M') }}"
           proxy:
             requests:
-              cpu: "{{ orderer_proxy_vcpu }}"
-              memory: "{{ orderer_proxy_memory }}"
+              cpu: "{{ org.orderer.resource.proxy.vcpu | default('100m') }}"
+              memory: "{{ org.orderer.resource.proxy.memory | default('200M') }}"
         storage:
           orderer:
-            size: "{{ orderer_storage }}"
-        wait_timeout: "{{ wait_timeout | default(omit) }}"
+            size: "{{ org.orderer.resource.orderer.storage | default('100Gi') }}"
+        wait_timeout: "{{ wait_timeout | default(900) }}"
