@@ -10,12 +10,7 @@
     - vars/organizations.yaml
   vars:
     # peer_org_name: org1
-    ordering_service_name: "{{ vars['ordering_organization'][os_org_name]['orderer']['name'] }}"
-    org_msp_admin: "{{ vars['peer_organizations'][peer_org_name]['msp']['admin'] }}{{ identity_prefix }}.json"
-    org_msp_id: "{{ vars['peer_organizations'][peer_org_name]['msp']['id'] }}"
-    org_msp_name: "{{ vars['peer_organizations'][peer_org_name]['msp']['name'] }}"
-    org_ca_name: "{{ vars['peer_organizations'][peer_org_name]['ca']['name'] }}"
-    peers: "{{ vars['peer_organizations'][peer_org_name]['peers'] }}"  
+    peer_org: "{{ vars['peer_organizations'][peer_org_name] }}"
   tasks:
     - name: Create a connection profile
       ibm.blockchain_platform.connection_profile:
@@ -24,8 +19,8 @@
         api_key: "{{ api_key }}"
         api_secret: "{{ api_secret | default(omit) }}"
         api_token_endpoint: "{{ api_token_endpoint | default(omit) }}"
-        name: "{{ org_msp_name }} Gateway"
-        path: "{{ connection_profile_path }}/{{ org_msp_name }} Gateway.json"
-        organization: "{{ org_msp_name }}"
-        certificate_authority: "{{ org_ca_name }}"
-        peers: "{{ peers }}"
+        name: "{{  peer_org.msp.name }} Gateway"
+        path: "{{ connection_profile_path }}/{{ peer_org.msp.name }} Gateway.json"
+        organization: "{{ peer_org.msp.name }}"
+        certificate_authority: "{{ peer_org.ca.name }}"
+        peers: "{{ peer_org.peers | map(attribute='name') | list }}" 

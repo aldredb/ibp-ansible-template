@@ -106,7 +106,7 @@ ansible-playbook 06-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=s
 ansible-playbook 07-install-chaincode.yaml --extra-vars "peer_org_name=org1 cc_name=marbles"
 ansible-playbook 07-install-chaincode.yaml --extra-vars "peer_org_name=org2 cc_name=marbles"
 
-ansible-playbook 08-instantiate-chaincode.yaml --extra-vars "os_org_name=os peer_org_name=org1 channel_name=samplechannel1 cc_name=marbles"
+ansible-playbook 08-instantiate-chaincode.yaml --extra-vars "peer_org_name=org1 channel_name=samplechannel1 cc_name=marbles"
 ```
 
 ### Create connection profile
