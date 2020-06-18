@@ -5,9 +5,10 @@ install-ibp.yaml
 *.bin
 # ignore all JSON wallet identity files
 wallet/
-Wallet.zip
 config/
 connection-profiles/
+bulk-import/
+bulk-import.zip
 spike*
 
 # NOTE: uncomment in Production since vars/ contains secrets

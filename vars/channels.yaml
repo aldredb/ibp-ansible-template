@@ -7,6 +7,13 @@ channels:
     members:
       - org1 # has to match the key in peer_organizations
       - org2
+    chaincodes:
+      marbles:
+        constructor:
+        function: "init"
+        args: 
+          - "test"
+        endorsement_policy: OR('org1msp.peer','org2msp.peer')
   samplechannel2:
     members:
       - org1
