@@ -1,0 +1,17 @@
+# Console address
+api_endpoint: https://<insert-console-address>
+
+# ibmcloud - for IBP SaaS
+# basic - for IBP SW
+api_authtype: ibmcloud
+
+# If authtype=ibmcloud, insert API key
+# If authtype=basic, insert console username
+api_key: DJN9wJZ-jarMMC7E9ZpLEH0rewDirOTPRzFOoKQYXIXE
+
+# If authtype=ibmcloud, omit this field
+# If authtype=basic, insert console password
+# api_secret: 
+
+wait_timeout: 3600 # 60 minute timeout
+state: present

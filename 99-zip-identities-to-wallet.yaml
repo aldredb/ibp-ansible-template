@@ -10,7 +10,7 @@
     - name: Insert `identity` field and insert identity JSON files to Wallet folder
       shell: "cat '{{ item }}' | jq '. + {type: \"identity\"}' > '{{ playbook_dir }}/Wallet/{{ item | basename }}'"
       with_fileglob:
-        - "{{ playbook_dir }}/*.json"
+        - "{{ playbook_dir }}/*_identity.json"
     - name: Create a zip archive of {{ playbook_dir }}/Wallet
       archive:
         path: "{{ playbook_dir }}/Wallet"

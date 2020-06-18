@@ -1,7 +1,7 @@
 .metals
 .vscode
 # ignore all JSON wallet identity files
-*.JSON
+*_identity.json
 install-ibp.yaml
 *.bin
 Wallet/
@@ -10,3 +10,4 @@ spike*
 
 # NOTE: uncomment in Production since vars/ contains secrets
 # vars
+vars/api.yaml

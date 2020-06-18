@@ -6,7 +6,7 @@
     - vars/resources.yaml
     - vars/organizations.yaml
   vars:
-    # org_name: os # load this using --extra-vars "org_name=<org_key>"
+    # org_name: org1 # load this using --extra-vars "org_name=<org_key>"
     - ca_name: "{{ vars['peer_organizations'][org_name]['ca']['name'] }}"
     - ca_zone: "{{ vars['peer_organizations'][org_name]['ca']['zone'] }}"
     - ca_admin_name: "{{ vars['peer_organizations'][org_name]['ca']['admin_name'] }}"
@@ -15,7 +15,7 @@
     - ca_id_list: "{{ vars['peer_organizations'][org_name]['ca']['id_list'] }}"
     - msp_name: "{{ vars['peer_organizations'][org_name]['msp']['name'] }}"
     - msp_id: "{{ vars['peer_organizations'][org_name]['msp']['id'] }}"
-    # - peer_list: "{{ vars['peer_organizations'][org_name]['peers'] }}" @TODO
+    - peers: "{{ vars['peer_organizations'][org_name]['peers'] }}" 
   tasks:
     - name: Create certificate authority
       ibm.blockchain_platform.certificate_authority:
@@ -64,7 +64,7 @@
         name: "{{ ca_admin_name }}"
         enrollment_id: "{{ ca_admin_enrollment_id }}"
         enrollment_secret: "{{ ca_admin_enrollment_secret }}"
-        path: "{{ playbook_dir }}/{{ ca_admin_name }}.json"
+        path: "{{ playbook_dir }}/{{ ca_admin_name }}_identity.json"
 
     - name: Register org admin, peers and monitoring user
       ibm.blockchain_platform.registered_identity:
@@ -74,7 +74,7 @@
         api_key: "{{ api_key | default(omit) }}"
         api_secret: "{{ api_secret | default(omit)}}"
         certificate_authority: "{{ ca_name }}"
-        registrar: "{{ playbook_dir }}/{{ ca_admin_name }}.json"
+        registrar: "{{ playbook_dir }}/{{ ca_admin_name }}_identity.json"
         enrollment_id: "{{ item.enrollment_id }}"
         enrollment_secret: "{{ item.enrollment_secret }}"
         type: "{{ item.type }}"
@@ -91,7 +91,7 @@
         name: "{{ ca_id_list[0].name }}"
         enrollment_id: "{{ ca_id_list[0].enrollment_id }}"
         enrollment_secret: "{{ ca_id_list[0].enrollment_secret }}"
-        path: "{{ playbook_dir }}/{{ ca_id_list[0].name }}.json"
+        path: "{{ playbook_dir }}/{{ ca_id_list[0].name }}_identity.json"
       register: org_admin
 
     - name: Create organization
@@ -104,7 +104,7 @@
         name: "{{ msp_name }}"
         msp_id: "{{ msp_id }}"
         certificate_authority: "{{ ca_name }}"
-        registrar: "{{ playbook_dir }}/{{ ca_admin_name }}.json"
+        registrar: "{{ playbook_dir }}/{{ ca_admin_name }}_identity.json"
         admins:
           - "{{ org_admin.enrolled_identity.cert }}"
 
@@ -146,6 +146,9 @@
           statedb:
             size: "{{ peer_couchdb_storage }}"
         wait_timeout: "{{ wait_timeout | default(omit) }}"
-      loop:
-        - "{{ ca_id_list[1] }}"
-        # - "{{ ca_id_list[2] }}"
+      vars: 
+        peer_list: "{{ ca_id_list |
+                      selectattr('name', 'in', peers)|
+                      list }}"
+      with_items:
+        - "{{ peer_list }}"

@@ -6,9 +6,9 @@
     - vars/organizations.yaml
     - vars/channels.yaml
   vars:
-    # org_name: os # load this using --extra-vars "os_org_name=os"
+    # os_org_name: os # load this using --extra-vars "os_org_name=os"
     ordering_service_name: "{{ vars['ordering_organization'][os_org_name]['orderer']['name'] }}"
-    ordering_service_msp_admin: "{{ vars['ordering_organization'][os_org_name]['ca']['id_list'][0]['name'] }}.json"
+    ordering_service_msp_admin: "{{ vars['ordering_organization'][os_org_name]['ca']['id_list'][0]['name'] }}_identity.json"
     ordering_service_msp_id: "{{ vars['ordering_organization'][os_org_name]['msp']['id'] }}"
   tasks:
     - name: Get the ordering service information

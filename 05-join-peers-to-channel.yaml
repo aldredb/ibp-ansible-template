@@ -1,0 +1,47 @@
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+---
+- name: Join the channel
+  hosts: localhost
+  vars_files:
+    - vars/api.yaml
+    - vars/organizations.yaml
+    - vars/channels.yaml
+  vars:
+    # os_org_name: os # load this using --extra-vars "os_org_name=os"
+    # peer_org_name: org1 # load this using --extra-vars "peer_org_name=org1"
+    # channel_name: samplechannel1 # load this using --extra-vars "channel_name=samplechannel1"
+    ordering_service_name: "{{ vars['ordering_organization'][os_org_name]['orderer']['name'] }}"
+    org_msp_admin: "{{ vars['peer_organizations'][peer_org_name]['ca']['id_list'][0]['name'] }}_identity.json"
+    org_msp_id: "{{ vars['peer_organizations'][peer_org_name]['msp']['id'] }}"
+    peers: "{{ vars['peer_organizations'][peer_org_name]['peers'] }}"
+  tasks:
+    - name: Fetch the genesis block for the channel
+      ibm.blockchain_platform.channel_block:
+        api_endpoint: "{{ api_endpoint }}"
+        api_authtype: "{{ api_authtype }}"
+        api_key: "{{ api_key }}"
+        api_secret: "{{ api_secret | default(omit) }}"
+        api_token_endpoint: "{{ api_token_endpoint | default(omit) }}"
+        operation: fetch
+        ordering_service: "{{ ordering_service_name }}"
+        identity: "{{ org_msp_admin }}"
+        msp_id: "{{ org_msp_id }}"
+        name: "{{ channel_name }}"
+        target: "0"
+        path: "{{ channel_name }}_genesis_block.bin"
+
+    - name: Join the peer(s) to the channel
+      ibm.blockchain_platform.peer_channel:
+        api_endpoint: "{{ api_endpoint }}"
+        api_authtype: "{{ api_authtype }}"
+        api_key: "{{ api_key }}"
+        api_secret: "{{ api_secret | default(omit) }}"
+        api_token_endpoint: "{{ api_token_endpoint | default(omit) }}"
+        operation: join
+        peer: "{{ item }}"
+        identity: "{{ org_msp_admin }}"
+        msp_id: "{{ org_msp_id }}"
+        path: "{{ channel_name }}_genesis_block.bin"
+      with_items: "{{ peers }}"

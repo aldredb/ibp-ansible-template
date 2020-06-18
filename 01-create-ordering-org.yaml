@@ -68,7 +68,7 @@
         name: "{{ ca_admin_name }}"
         enrollment_id: "{{ ca_admin_enrollment_id }}"
         enrollment_secret: "{{ ca_admin_enrollment_secret }}"
-        path: "{{ playbook_dir }}/{{ ca_admin_name }}.json"
+        path: "{{ playbook_dir }}/{{ ca_admin_name }}_identity.json"
 
     - name: Register org admin, orderer and monitoring user
       ibm.blockchain_platform.registered_identity:
@@ -95,7 +95,7 @@
         name: "{{ ca_id_list[0].name }}"
         enrollment_id: "{{ ca_id_list[0].enrollment_id }}"
         enrollment_secret: "{{ ca_id_list[0].enrollment_secret }}"
-        path: "{{ playbook_dir }}/{{ ca_id_list[0].name }}.json"
+        path: "{{ playbook_dir }}/{{ ca_id_list[0].name }}_identity.json"
       register: org_admin
 
     - name: Create organization
@@ -108,7 +108,7 @@
         name: "{{ msp_name }}"
         msp_id: "{{ msp_id }}"
         certificate_authority: "{{ ca_name }}"
-        registrar: "{{ playbook_dir }}/{{ ca_admin_name }}.json"
+        registrar: "{{ playbook_dir }}/{{ ca_admin_name }}_identity.json"
         admins:
           - "{{ org_admin.enrolled_identity.cert }}"
 

@@ -1,5 +1,0 @@
-api_endpoint: https://2baaf3be388943d1acc884b9a74223b5-ibpconsole-console.apn02.blockchain.cloud.ibm.com
-api_authtype: ibmcloud
-api_key: DJN9wJZ-jarMMC7E9ZpLEH0rewDirOTPRzFOoKQYXIXE
-wait_timeout: 3600 # 60 minute timeout
-state: present
