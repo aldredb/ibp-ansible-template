@@ -7,8 +7,8 @@
     - vars/channels.yaml
   vars:
     # os_org_name: os # load this using --extra-vars "os_org_name=os"
-    # creator_org_name: os # load this using --extra-vars "creator_org_name=org1"
-    # channel_name: os # load this using --extra-vars "channel_name=samplechannel1"
+    # creator_org_name: org1 # load this using --extra-vars "creator_org_name=org1"
+    # channel_name: samplechannel1 # load this using --extra-vars "channel_name=samplechannel1"
     ordering_service_name: "{{ vars['ordering_organization'][os_org_name]['orderer']['name'] }}"
     ordering_service_msp_admin: "{{ vars['ordering_organization'][os_org_name]['ca']['id_list'][0]['name'] }}_identity.json"
     ordering_service_msp_id: "{{ vars['ordering_organization'][os_org_name]['msp']['id'] }}"
@@ -43,12 +43,20 @@
         operation: create
         name: "{{ channel_name }}"
         path: "{{ channel_name }}_config_update.bin"
-        # @TODO: find out a better way
-        organizations: "{{ channel.members }}" 
+        organizations: "{{ channel_members }}" 
         policies:
           Admins: "{{ playbook_dir }}/channel-policies/{{ channel_name }}/admins-policy.json"
           Readers: "{{ playbook_dir }}/channel-policies/{{ channel_name }}/readers-policy.json"
           Writers: "{{ playbook_dir }}/channel-policies/{{ channel_name }}/writers-policy.json"
+      vars:
+        # Matches the key listed in the channel.members to those of peer_organizations
+        # then extract the MSP name
+        channel_members: "{{ peer_organizations|
+                dict2items|
+                selectattr('key', 'in', channel.members)|
+                list|
+                map(attribute='value.msp.name')|
+                list }}"
       when: result.msg is defined and 'NOT_FOUND' in result.msg
 
     - name: Sign the channel configuration update for the new channel

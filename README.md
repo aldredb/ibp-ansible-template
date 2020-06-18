@@ -87,9 +87,13 @@ ansible-playbook 02-create-peer-orgs.yaml --extra-vars "org_name=org2"
 ansible-playbook 03-add-org-to-consortium.yaml --extra-vars "os_org_name=os"
 
 ansible-playbook 04-create-channel.yaml --extra-vars "channel_name=samplechannel1 os_org_name=os creator_org_name=org1" -v
+ansible-playbook 04-create-channel.yaml --extra-vars "channel_name=samplechannel2 os_org_name=os creator_org_name=org1" -v
 
 ansible-playbook 05-join-peers-to-channel.yaml --extra-vars "channel_name=samplechannel1 os_org_name=os peer_org_name=org1" -v
 ansible-playbook 05-join-peers-to-channel.yaml --extra-vars "channel_name=samplechannel1 os_org_name=os peer_org_name=org2" -v
+
+ansible-playbook 05-join-peers-to-channel.yaml --extra-vars "channel_name=samplechannel2 os_org_name=os peer_org_name=org1" -v
+ansible-playbook 05-join-peers-to-channel.yaml --extra-vars "channel_name=samplechannel2 os_org_name=os peer_org_name=org2" -v
 ```
 
 ### Create wallet zip file to be imported to console
