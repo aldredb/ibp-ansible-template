@@ -1,5 +1,0 @@
-chaincodes:
-  marbles:
-    version: v1
-    language: golang
-    path: chaincode/marbles@v1.cds

@@ -9,11 +9,12 @@ channels:
       - org2
     chaincodes:
       marbles:
+        version: v1
         constructor:
-        function: "init"
-        args: 
-          - "test"
-        endorsement_policy: OR('org1msp.peer','org2msp.peer')
+          function: "init"
+          args: 
+            - "test"
+          endorsement_policy: OR('org1msp.peer','org2msp.peer')
   samplechannel2:
     members:
       - org1

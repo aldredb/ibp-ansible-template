@@ -2,19 +2,48 @@
   hosts: localhost
   vars:
     state: present
+
+    # k8s - Deploy the console into a Kubernetes cluster.
+    # openshift - Deploy the console into a Red Hat OpenShift cluster.
     target: openshift
+
     arch: amd64
+
+    # Name of the Openshift project or Kubernetes cluster
+    # that you are installing the IBP into
     project: <project>
+
+    # Your IBP entitlement key in https://myibm.ibm.com/products-services/containerlibrary
     image_registry_password: <image_registry_password>
+
+    # Email address of your IBMid account that you use to access the My IBM dashboard
     image_registry_email: <image_registry_email>
+
+    # Domain name of your Kubernetes or OpenShift cluster. 
+    # This domain name is used as the base domain name for all ingress or routes 
+    # created by the IBP
     console_domain: <console_domain>
+
+    # Email address of the IBP console user that will be created during the installation process
+    # You will use this email address to access the IBM Blockchain Platform console after installation
     console_email: <console_email>
+
+    # Default password for the IBM Blockchain Platform console. 
+    # This default password will be set as the password for all new users, 
+    # including the user created during the installation process
     console_default_password: <console_default_password>
+
+    # Set to 3600 seconds (1 hour), which should be sufficient for most environments. 
+    # You only need to change the value for this variable if you find that 
+    # timeout errors occur during the installation process
     wait_timeout: 3600
+
+    # # If your cluster is on multizones, uncomment and list the zones
     # clusterdata:
     #   zones:
     #     - <zone_1>
     #     - <zone_2>
     #     - <zone_3>
+  
   roles:
     - ibm.blockchain_platform.console

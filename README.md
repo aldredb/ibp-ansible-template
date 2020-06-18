@@ -22,32 +22,13 @@ NAME            STATUS   ROLES           AGE     VERSION
 
 Note: Skip this section if IBP SaaS is used
 
-Create a file named `install-ibp.yaml` from `install-ibp.yaml.template`
+Create a file named `install-ibp.yaml` from `install-ibp.yaml.template` and fill accordingly based on the instruction found in the template
 
 ```sh
 cp install-ibp.yaml.template install-ibp.yaml
 ```
 
-Change the following variables:
-
-- Replace `<project>` with the name of the Red Hat OpenShift project, that you are installing the IBM Blockchain Platform into.
-- Replace `<image_registry_password>` with your IBM Blockchain Platform entitlement key([link](https://myibm.ibm.com/products-services/containerlibrary)).
-- Replace `<image_registry_email>` with the email address of your IBMid account that you use to access the My IBM dashboard.
-- Replace `<console_domain>` with the domain name of your Kubernetes cluster or Red Hat OpenShift cluster. This domain name is used as the base domain name for all ingress or routes created by the IBM Blockchain Platform.
-- Replace `<console_email>` with the email address of the IBM Blockchain Platform console user that will be created during the installation process. You will use this email address to access the IBM Blockchain Platform console after installation.
-- Replace `<console_default_password>` with the default password for the IBM Blockchain Platform console. This default password will be set as the password for all new users, including the user created during the installation process.
-- By default, the `<wait_timeout>` variable is set to 3600 seconds (1 hour), which should be sufficient for most environments. You only need to change the value for this variable if you find that timeout errors occur during the installation process.
-
-> NOTE: if your Openshift Cluster is on multizones: add the following to `install-ibp.yaml`:
-
-```yaml
-clusterdata:
-  zones:
-    - <zone_1>
-    - <zone_2>
-```
-
-Install the IBP by running:
+Install IBP by running:
 
 ```sh
 $ ansible-playbook install-ibp.yaml
@@ -103,8 +84,8 @@ ansible-playbook 06-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=s
 ### Install and instantiate chaincode
 
 ```sh
-ansible-playbook 07-install-chaincode.yaml --extra-vars "peer_org_name=org1 cc_name=marbles"
-ansible-playbook 07-install-chaincode.yaml --extra-vars "peer_org_name=org2 cc_name=marbles"
+ansible-playbook 07-install-chaincode.yaml --extra-vars "peer_org_name=org1 cc_path=chaincode/marbles@v1.cds"
+ansible-playbook 07-install-chaincode.yaml --extra-vars "peer_org_name=org2 cc_path=chaincode/marbles@v1.cds"
 
 ansible-playbook 08-instantiate-chaincode.yaml --extra-vars "peer_org_name=org1 channel_name=samplechannel1 cc_name=marbles"
 ```

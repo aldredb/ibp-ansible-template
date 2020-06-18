@@ -11,7 +11,7 @@
     - vars/chaincodes.yaml
   vars:
     # peer_org_name: org1
-    # cc_name: marbles
+    # cc_path: chaincode/marbles@v1.cds
     peer_org: "{{ vars['peer_organizations'][peer_org_name] }}"
     peer_org_msp_admin: "{{ playbook_dir }}/{{ wallet_path }}/{{ peer_org.msp.admin }}.json"
     cc: "{{ vars['chaincodes'][cc_name] }}"
@@ -26,5 +26,5 @@
         peer: "{{ item }}"
         identity: "{{ peer_org_msp_admin }}"
         msp_id: "{{ peer_org.msp.id }}"
-        path: "{{ cc.path }}"
+        path: "{{ cc_path }}"
       with_items: "{{ peer_org.peers | map(attribute='name') | list }}"

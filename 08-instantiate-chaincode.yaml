@@ -8,7 +8,7 @@
     - vars/common.yaml
     - vars/api.yaml
     - vars/organizations.yaml
-    - vars/chaincodes.yaml
+    - vars/channels.yaml
   vars:
     # peer_org_name: org1
     # cc_name: marbles
@@ -16,7 +16,7 @@
     peer_org: "{{ vars['peer_organizations'][peer_org_name] }}"
     peer_org_msp_admin: "{{ playbook_dir }}/{{ wallet_path }}/{{ peer_org.msp.admin }}.json"
     peer_list: "{{ peer_org.peers | map(attribute='name') | list }}" 
-    cc: "{{ vars['chaincodes'][cc_name] }}"
+    cc: "{{ vars['channels'][channel_name]['chaincodes'][cc_name] }}"
   tasks:
     - name: Instantiate the chaincode on the channel
       ibm.blockchain_platform.instantiated_chaincode:
@@ -31,9 +31,9 @@
         channel: "{{ channel_name }}"
         name: "{{ cc_name }}"
         constructor:
-          function: "{{ cc_init_func | default(omit) }}"
-          args: "{{ cc_init_args | default(omit) }}"
-        version: "{{ cc_ver }}"
-        endorsement_policy: "{{ cc_endorsement_policy | default(omit) }}"
-        collections_config: "{{ cc_collections_config | default(omit) }}"
+          function: "{{ cc.constructor.function | default(omit) }}"
+          args: "{{ cc.constructor.args | default(omit) }}"
+        version: "{{ cc.version }}"
+        endorsement_policy: "{{ cc.endorsement_policy | default(omit) }}"
+        collections_config: "{{ cc.collections_config | default(omit) }}"
       
