@@ -2,6 +2,7 @@
 - name: Create Ordering Service Organization
   hosts: localhost
   vars_files:
+    - vars/common.yaml
     - vars/api.yaml
     - vars/resources.yaml
     - vars/organizations.yaml

@@ -12,6 +12,3 @@ api_key: DJN9wJZ-jarMMC7E9ZpLEH0rewDirOTPRzFOoKQYXIXE
 # If authtype=ibmcloud, omit this field
 # If authtype=basic, insert console password
 # api_secret: 
-
-wait_timeout: 3600 # 60 minute timeout
-state: present

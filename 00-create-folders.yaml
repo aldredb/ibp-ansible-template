@@ -1,0 +1,10 @@
+- name: Create folders
+  hosts: localhost
+  vars_files:
+    - vars/common.yaml
+  tasks:
+    - name: Create config folder
+      file:
+        path: "{{ playbook_dir }}/{{ channel_config_path }}"
+        state: directory
+        mode: '0755'

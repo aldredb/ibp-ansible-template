@@ -75,6 +75,8 @@ Fill in `vars/api.yaml`
 ### Create organizations
 
 ```sh
+ansible-playbook 00-create-folders.yaml
+
 ansible-playbook 01-create-ordering-org.yaml --extra-vars "org_name=os"
 
 ansible-playbook 02-create-peer-orgs.yaml --extra-vars "org_name=org1"
@@ -94,6 +96,9 @@ ansible-playbook 05-join-peers-to-channel.yaml --extra-vars "channel_name=sample
 
 ansible-playbook 05-join-peers-to-channel.yaml --extra-vars "channel_name=samplechannel2 os_org_name=os peer_org_name=org1" -v
 ansible-playbook 05-join-peers-to-channel.yaml --extra-vars "channel_name=samplechannel2 os_org_name=os peer_org_name=org2" -v
+
+ansible-playbook 06-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=samplechannel1 os_org_name=os peer_org_name=org1" -v
+ansible-playbook 06-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=samplechannel1 os_org_name=os peer_org_name=org2" -v
 ```
 
 ### Create wallet zip file to be imported to console

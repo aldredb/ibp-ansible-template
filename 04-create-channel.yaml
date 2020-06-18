@@ -2,6 +2,7 @@
 - name: Create channels
   hosts: localhost
   vars_files:
+    - vars/common.yaml
     - vars/api.yaml
     - vars/organizations.yaml
     - vars/channels.yaml

@@ -1,0 +1,5 @@
+channel_config_path: config
+wallet_path: wallet
+identity_prefix: _identity
+wait_timeout: 3600 # 60 minute timeout
+state: present
