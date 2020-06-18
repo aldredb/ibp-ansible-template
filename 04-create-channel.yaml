@@ -11,9 +11,9 @@
     # creator_org_name: org1 # load this using --extra-vars "creator_org_name=org1"
     # channel_name: samplechannel1 # load this using --extra-vars "channel_name=samplechannel1"
     ordering_service_name: "{{ vars['ordering_organization'][os_org_name]['orderer']['name'] }}"
-    ordering_service_msp_admin: "{{ vars['ordering_organization'][os_org_name]['ca']['id_list'][0]['name'] }}_identity.json"
+    ordering_service_msp_admin: "{{ vars['ordering_organization'][os_org_name]['msp']['admin'] }}{{ identity_prefix }}.json"
     ordering_service_msp_id: "{{ vars['ordering_organization'][os_org_name]['msp']['id'] }}"
-    creator_msp_admin: "{{ vars['peer_organizations'][creator_org_name]['ca']['id_list'][0]['name'] }}_identity.json"
+    creator_msp_admin: "{{ vars['peer_organizations'][creator_org_name]['msp']['admin'] }}{{ identity_prefix }}.json"
     creator_msp_id: "{{ vars['peer_organizations'][creator_org_name]['msp']['id'] }}"
     channel: "{{ vars['channels'][channel_name] }}"
   tasks:
