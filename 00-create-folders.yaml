@@ -8,3 +8,8 @@
         path: "{{ playbook_dir }}/{{ channel_config_path }}"
         state: directory
         mode: '0755'
+    - name: Create connection profile folder
+      file:
+        path: "{{ playbook_dir }}/{{ connection_profile_path }}"
+        state: directory
+        mode: '0755'

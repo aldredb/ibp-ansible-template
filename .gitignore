@@ -1,3 +1,4 @@
+.DS_Store
 .metals
 .vscode
 # ignore all JSON wallet identity files
@@ -8,6 +9,7 @@ Wallet/
 Wallet.zip
 spike*
 config/
+connection-profiles/
 
 # NOTE: uncomment in Production since vars/ contains secrets
 # vars
