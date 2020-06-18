@@ -7,6 +7,7 @@ install-ibp.yaml
 Wallet/
 Wallet.zip
 spike*
+config/
 
 # NOTE: uncomment in Production since vars/ contains secrets
 # vars

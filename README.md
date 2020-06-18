@@ -106,6 +106,8 @@ ansible-playbook 06-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=s
 ```sh
 ansible-playbook 07-install-chaincode.yaml --extra-vars "peer_org_name=org1 cc_path=chaincode/marbles@v1.cds"
 ansible-playbook 07-install-chaincode.yaml --extra-vars "peer_org_name=org2 cc_path=chaincode/marbles@v1.cds"
+
+ansible-playbook 08-instantiate-chaincode.yaml --extra-vars "peer_org_name=org1 channel_name=samplechannel1 cc_name=marbles cc_ver=v1 cc_endorsement_policy=OR('Org1MSP.peer','Org2MSP.peer')"
 ```
 
 ### Create wallet zip file to be imported to console
