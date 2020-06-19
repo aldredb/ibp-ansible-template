@@ -1,5 +1,6 @@
 channel_config_path: config
 wallet_path: wallet
 connection_profile_path: connection-profiles
+channel_policies_path: channel-policies
 wait_timeout: 3600 # 60 minute timeout
 state: present

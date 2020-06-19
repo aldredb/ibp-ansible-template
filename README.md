@@ -48,7 +48,7 @@ Now you could open your IBP console in your browser and change your initial defa
 ### Create api variable file
 
 ```sh
-cp api.yaml.template vars/api.yaml
+cp vars/api.yaml.template vars/api.yaml
 ```
 
 Fill in `vars/api.yaml`
