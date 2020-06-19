@@ -6,6 +6,8 @@ This folder contains ansible scripts, configs to setup a blockchain network on I
 
 Before running the scripts, you need to make sure to have all [required software](https://ibm-blockchain.github.io/ansible-collection/installation.html#requirements) installed
 
+Also have YAML parser [`yq` (>= 3.2.1)](https://mikefarah.gitbook.io/yq/) installed.
+
 ## Getting Started
 
 Log in to your Openshift/Kubernetes Cluster, verify by running:
@@ -69,7 +71,9 @@ ansible-playbook 02-create-peer-orgs.yaml --extra-vars "org_name=org2"
 ```sh
 ansible-playbook 03-add-org-to-consortium.yaml --extra-vars "os_org_name=os"
 
+./scripts/generate_channel_policies.sh samplechannel1
 ansible-playbook 04-create-channel.yaml --extra-vars "channel_name=samplechannel1 os_org_name=os creator_org_name=org1" -v
+./scripts/generate_channel_policies.sh samplechannel2
 ansible-playbook 04-create-channel.yaml --extra-vars "channel_name=samplechannel2 os_org_name=os creator_org_name=org1" -v
 
 ansible-playbook 05-join-peers-to-channel.yaml --extra-vars "channel_name=samplechannel1 os_org_name=os peer_org_name=org1" -v

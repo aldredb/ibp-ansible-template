@@ -5,16 +5,24 @@ consortium_members:
 channels:
   samplechannel1:
     members:
-      - org1 # has to match the key in peer_organizations
+      # has to match the key in peer_organizations
+      - org1
       - org2
+    operators:
+      - org1
+      - org2
+    config_update_policy: 2 # out of total number of operators
     chaincodes:
       marbles:
         version: v1
         constructor:
           function: "init"
-          args: 
+          args:
             - "test"
           endorsement_policy: OR('org1msp.peer','org2msp.peer')
   samplechannel2:
     members:
       - org1
+    operators:
+      - org1
+    config_update_policy: 1
