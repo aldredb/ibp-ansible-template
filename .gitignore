@@ -1,6 +1,7 @@
 .DS_Store
 .metals
 .vscode
+install-crd.yaml
 install-ibp.yaml
 *.bin
 # ignore all JSON wallet identity files

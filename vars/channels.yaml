@@ -14,7 +14,7 @@ channels:
     config_update_policy: 2 # out of total number of operators
     chaincodes:
       marbles:
-        version: v1
+        version: v2
         constructor:
           function: "init"
           args:

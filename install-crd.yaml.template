@@ -1,0 +1,32 @@
+- name: Deploy IBM Blockchain Platform custom resource definitions
+  hosts: localhost
+  vars:
+    # present - install IBP CRDS
+    # absent - remove IBP CRDS
+    state: present
+
+    # k8s - Deploy the CRDs into a Kubernetes cluster.
+    # openshift - Deploy the CRDs into a Red Hat OpenShift cluster.
+    target: openshift
+
+    arch: amd64
+    
+    # If target=openshift
+    project: ibpinfra
+
+    # If target=k8s
+    # namespace: ibpinfra
+
+    # Your IBP entitlement key in https://myibm.ibm.com/products-services/containerlibrary
+    image_registry_password: <image_registry_password>
+
+    # Email address of your IBMid account that you use to access the My IBM dashboard
+    image_registry_email: <image_registry_email>
+
+    # Set to 3600 seconds (1 hour), which should be sufficient for most environments. 
+    # You only need to change the value for this variable if you find that 
+    # timeout errors occur during the installation process
+    wait_timeout: 3600
+
+  roles:
+    - ibm.blockchain_platform.crds
