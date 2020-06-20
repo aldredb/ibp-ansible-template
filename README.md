@@ -2,11 +2,15 @@
 
 This folder contains ansible scripts, configs to setup a blockchain network on IBP deployed on Openshift in an automated manner, thanks to [IBM ansible collection](https://github.com/IBM-Blockchain/ansible-collection).
 
+Tested on IBP Ansible Collection version: **0.0.30**
+
 ## Requirements
 
-Before running the scripts, you need to make sure to have all [required software](https://ibm-blockchain.github.io/ansible-collection/installation.html#requirements) installed
+Before running the scripts, you need to make sure to have the following installed
 
-Also have YAML parser [`yq` (>= 3.2.1)](https://mikefarah.gitbook.io/yq/) installed.
+* [Ansible and IBP collection](https://ibm-blockchain.github.io/ansible-collection/installation.html#requirements)
+
+* YAML parser [`yq` (>= 3.3.2)](https://mikefarah.gitbook.io/yq/) installed.
 
 ## Getting Started
 
@@ -20,19 +24,21 @@ NAME            STATUS   ROLES           AGE     VERSION
 10.212.54.221   Ready    master,worker   3d21h   v1.16.2
 ```
 
-### Install IBM Blockchain Platform
+### Install IBM Blockchain Platform CRDs and console
 
 Note: Skip this section if IBP SaaS is used
 
 Create a file named `install-ibp.yaml` from `install-ibp.yaml.template` and fill accordingly based on the instruction found in the template
 
 ```sh
+cp install-crd.yaml.template install-crd.yaml
 cp install-ibp.yaml.template install-ibp.yaml
 ```
 
-Install IBP by running:
+Install IBP CRDs and console by running:
 
 ```sh
+$ ansible-playbook install-crd.yaml
 $ ansible-playbook install-ibp.yaml
 
 …
@@ -88,8 +94,8 @@ ansible-playbook 06-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=s
 ### Install and instantiate chaincode
 
 ```sh
-ansible-playbook 07-install-chaincode.yaml --extra-vars "peer_org_name=org1 cc_path=chaincode/marbles@v1.cds"
-ansible-playbook 07-install-chaincode.yaml --extra-vars "peer_org_name=org2 cc_path=chaincode/marbles@v1.cds"
+ansible-playbook 07-install-chaincode.yaml --extra-vars "peer_org_name=org1 cc_path=chaincode/marbles@v2.cds"
+ansible-playbook 07-install-chaincode.yaml --extra-vars "peer_org_name=org2 cc_path=chaincode/marbles@v2.cds"
 
 ansible-playbook 08-instantiate-chaincode.yaml --extra-vars "peer_org_name=org1 channel_name=samplechannel1 cc_name=marbles"
 ```

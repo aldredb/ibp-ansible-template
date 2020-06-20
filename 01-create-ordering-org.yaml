@@ -19,6 +19,7 @@
         api_secret: "{{ api_secret | default(omit)}}"
         name: "{{ org.ca.name }}"
         zone: "{{ org.ca.zone | default(omit) }}"
+        version: "{{ org.ca.version | default('1.4.7-0')}}"
         config_override:
           ca:
             registry:
@@ -113,10 +114,11 @@
         name: "{{ org.orderer.name }}"
         msp_id: "{{ org.msp.id }}"
         nodes: "{{ org.orderer.nodes }}"
-        zone: "{{ org.orderer.zones | default(omit) }}"
+        zones: "{{ org.orderer.zones | default(omit) }}"
+        version: "{{ org.orderer.version | default('1.4.7-0')}}"
         certificate_authority: "{{ org.ca.name }}"
-        enrollment_id: "{{ org.orderer.enrollment_id }}"
-        enrollment_secret: "{{ org.orderer.enrollment_secret }}"
+        enrollment_id: "{{ enrollment_info.enrollment_id }}"
+        enrollment_secret: "{{ enrollment_info.enrollment_secret }}"
         admin_certificates:
           - "{{ org_admin.enrolled_identity.cert }}"
         resources:
@@ -132,3 +134,5 @@
           orderer:
             size: "{{ org.orderer.resource.orderer.storage | default('100Gi') }}"
         wait_timeout: "{{ wait_timeout | default(900) }}"
+      vars:
+        enrollment_info: "{{ org.ca.id_list | selectattr('name','equalto', org.orderer.name) | first }}"

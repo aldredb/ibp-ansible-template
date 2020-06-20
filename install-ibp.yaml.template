@@ -1,6 +1,8 @@
 - name: Deploy IBM Blockchain Platform console
   hosts: localhost
   vars:
+    # present - install IBP console
+    # absent - remove IBP console
     state: present
 
     # k8s - Deploy the console into a Kubernetes cluster.
@@ -9,15 +11,23 @@
 
     arch: amd64
 
-    # Name of the Openshift project or Kubernetes cluster
-    # that you are installing the IBP into
+    # If target=openshift, name of project that you are installing the IBP into
     project: <project>
+
+    # If target=k8s, name of namespace that you are installing the IBP into
+    # namespace: <namespace>
 
     # Your IBP entitlement key in https://myibm.ibm.com/products-services/containerlibrary
     image_registry_password: <image_registry_password>
 
     # Email address of your IBMid account that you use to access the My IBM dashboard
     image_registry_email: <image_registry_email>
+
+    # The version of IBP to use
+    product_version: 2.5.0
+    
+    # The version of IBP operator to use
+    operator_version: 20200618
 
     # Domain name of your Kubernetes or OpenShift cluster. 
     # This domain name is used as the base domain name for all ingress or routes 
@@ -39,11 +49,10 @@
     wait_timeout: 3600
 
     # # If your cluster is on multizones, uncomment and list the zones
-    # clusterdata:
-    #   zones:
-    #     - <zone_1>
-    #     - <zone_2>
-    #     - <zone_3>
+    # zones:
+    #   - <zone_1>
+    #   - <zone_2>
+    #   - <zone_3>
   
   roles:
     - ibm.blockchain_platform.console

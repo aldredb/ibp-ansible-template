@@ -8,7 +8,6 @@
     - vars/common.yaml
     - vars/api.yaml
     - vars/organizations.yaml
-    - vars/chaincodes.yaml
   vars:
     # peer_org_name: org1
     # cc_path: chaincode/marbles@v1.cds

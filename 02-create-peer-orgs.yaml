@@ -121,6 +121,7 @@
         msp_id: "{{ org.msp.id }}"
         state_db: "{{ item.state_db }}"
         zone: "{{ item.zone | default(omit) }}"
+        version: "{{ item.version | default('1.4.7-0')}}"
         certificate_authority: "{{ org.ca.name }}"
         enrollment_id: "{{ item.enrollment_id }}"
         enrollment_secret: "{{ item.enrollment_secret }}"

@@ -3,6 +3,7 @@ ordering_organization:
     ca:
       name: "OS CA"
       zone: tok02
+      version: "1.4.7-0"
       admin_name: "OS CA Admin"
       admin_enrollment_id: "admin"
       admin_enrollment_secret: "adminpw"
@@ -28,10 +29,15 @@ ordering_organization:
       id: "osmsp"
       admin: "OS MSP Admin"
     orderer:
-      name: Orderer
-      enrollment_id: "os"
-      enrollment_secret: "ospw"
+      name: Orderer # has to match one  of the names in id_list
+      zones:
+        - tok02
+        - tok02
+        - tok04
+        - tok04
+        - tok05
       nodes: 5
+      version: "2.1.1-0"
       resource:
         orderer:
           vcpu: 350m
@@ -40,18 +46,13 @@ ordering_organization:
         proxy:
           vcpu: 100m
           memory: 200M
-      zones:
-        - tok02
-        - tok02
-        - tok04
-        - tok04
-        - tok05
 
 peer_organizations:
   org1:
     ca:
       name: "Org1 CA"
       zone: tok04
+      version: "1.4.7-0"
       admin_name: "Org1 CA Admin"
       admin_enrollment_id: "admin"
       admin_enrollment_secret: "adminpw"
@@ -88,6 +89,7 @@ peer_organizations:
     - name: Org1 Peer1
       state_db: couchdb
       zone: "tok05"
+      version: "2.1.1-0"
       resource:
         peer:
           vcpu: 400m
@@ -110,6 +112,7 @@ peer_organizations:
     ca:
       name: "Org2 CA"
       zone: tok05
+      version: "1.4.7-0"
       admin_name: "Org2 CA Admin"
       admin_enrollment_id: "admin"
       admin_enrollment_secret: "adminpw"
@@ -146,6 +149,7 @@ peer_organizations:
     - name: Org2 Peer1
       state_db: couchdb
       zone: "tok04"
+      version: "2.1.1-0"
       resource:
         peer:
           vcpu: 400m
