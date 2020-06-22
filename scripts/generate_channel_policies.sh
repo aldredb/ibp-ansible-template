@@ -113,6 +113,6 @@ for i in $(seq 0 "$(expr "$NUM_ADMIN" - 1)"); do
 done
 
 # NOTE: convert all YAML file to JSON files
-yq r -j -P $reader_policy_file >"$DEST_DIR/readers-policy.json"
-yq r -j -P $writer_policy_file >"$DEST_DIR/writers-policy.json"
-yq r -j -P $admin_policy_file >"$DEST_DIR/admins-policy.json"
+# yq r -j -P $reader_policy_file >"$DEST_DIR/readers-policy.json"
+# yq r -j -P $writer_policy_file >"$DEST_DIR/writers-policy.json"
+# yq r -j -P $admin_policy_file >"$DEST_DIR/admins-policy.json"

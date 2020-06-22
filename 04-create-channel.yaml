@@ -46,9 +46,9 @@
         path: "{{ channel_config_path }}/{{ channel_name }}_config_update.bin"
         organizations: "{{ channel_members }}"
         policies:
-          Admins: "{{ channel_policies_dir }}/admins-policy.json"
-          Readers: "{{ channel_policies_dir }}/readers-policy.json"
-          Writers: "{{ channel_policies_dir }}/writers-policy.json"
+          Admins: "{{ lookup('file', '{{ channel_policies_dir }}/admins-policy.yaml') | from_yaml }}"
+          Readers: "{{ lookup('file', '{{ channel_policies_dir }}/readers-policy.yaml') | from_yaml }}"
+          Writers: "{{ lookup('file', '{{ channel_policies_dir }}/writers-policy.yaml') | from_yaml }}"
       vars:
         # Matches the key listed in the channel.members to those of peer_organizations
         # then extract the MSP name
