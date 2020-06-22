@@ -1,14 +1,16 @@
-- name: Create folders
+---
+- name: Delete folders
   hosts: localhost
   vars_files:
     - vars/common.yaml
   tasks:
-    - name: Create config, connection profile, wallet folder
+    - name: Delete folders
       file:
+        state: absent
         path: "{{ item }}"
-        state: directory
-        mode: "0755"
       loop:
         - "{{ channel_config_path }}"
         - "{{ connection_profile_path }}"
         - "{{ wallet_path }}"
+        - "{{ channel_policies_path }}"
+        - "{{ bulk_import_path }}"

@@ -1,0 +1,48 @@
+---
+- name: Delete Ordering Service Organization
+  hosts: localhost
+  vars_files:
+    - vars/common.yaml
+    - vars/api.yaml
+    - vars/organizations.yaml
+  vars:
+    # org_name: os
+    org: "{{ vars['ordering_organization'][org_name] }}"
+    enrollment_info: "{{ org.ca.id_list | selectattr('name','equalto', org.orderer.name) | first }}"
+  tasks:
+    - name: Get org admin identity
+      ibm.blockchain_platform.enrolled_identity_info:
+        path: "{{ wallet_path }}/{{ org.msp.admin }}.json"
+      register: org_admin
+
+    - name: Delete ordering service
+      ibm.blockchain_platform.ordering_service:
+        state: absent
+        api_endpoint: "{{ api_endpoint }}"
+        api_authtype: "{{ api_authtype }}"
+        api_key: "{{ api_key }}"
+        api_secret: "{{ api_secret | default(omit) }}"
+        name: "{{ org.orderer.name }}"
+        certificate_authority: "{{ org.ca.name }}"
+        enrollment_id: "{{ enrollment_info.enrollment_id }}"
+        enrollment_secret: "{{ enrollment_info.enrollment_secret }}"
+        admin_certificates:
+          - "{{ org_admin.enrolled_identity.cert }}"
+
+    - name: Delete organization
+      ibm.blockchain_platform.organization:
+        state: absent
+        api_endpoint: "{{ api_endpoint }}"
+        api_authtype: "{{ api_authtype }}"
+        api_key: "{{ api_key | default(omit) }}"
+        api_secret: "{{ api_secret | default(omit)}}"
+        name: "{{ org.msp.name }}"
+
+    - name: Delete certificate authority
+      ibm.blockchain_platform.certificate_authority:
+        state: absent
+        api_endpoint: "{{ api_endpoint }}"
+        api_authtype: "{{ api_authtype }}"
+        api_key: "{{ api_key | default(omit) }}"
+        api_secret: "{{ api_secret | default(omit)}}"
+        name: "{{ org.ca.name }}"
