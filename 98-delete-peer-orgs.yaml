@@ -1,0 +1,56 @@
+---
+- name: Delete Peer Organization
+  hosts: localhost
+  vars_files:
+    - vars/common.yaml
+    - vars/api.yaml
+    - vars/organizations.yaml
+  vars:
+    # org_name: org1
+    org: "{{ vars['peer_organizations'][org_name] }}"
+  tasks:
+    - name: Construct peer complete information list
+      set_fact:
+        # Merge information in org.peers and org.ca.id_list
+        peer_complete_info_list: "{{ peer_complete_info_list | default([]) + [org.peers | selectattr('name','equalto', item) | first | combine(org.ca.id_list | selectattr('name','equalto', item) | first)] }}"
+      with_items:
+        - "{{ org.peers | map(attribute='name') | list }}"
+
+    - name: Get org admin identity
+      ibm.blockchain_platform.enrolled_identity_info:
+        path: "{{ wallet_path }}/{{ org.msp.admin }}.json"
+      register: org_admin
+
+    - name: Delete peer(s)
+      ibm.blockchain_platform.peer:
+        state: absent
+        api_endpoint: "{{ api_endpoint }}"
+        api_authtype: "{{ api_authtype }}"
+        api_key: "{{ api_key | default(omit) }}"
+        api_secret: "{{ api_secret | default(omit)}}"
+        name: "{{ item.name }}"
+        certificate_authority: "{{ org.ca.name }}"
+        admins:
+          - "{{ org_admin.enrolled_identity.cert }}"
+        enrollment_id: "{{ item.enrollment_id }}"
+        enrollment_secret: "{{ item.enrollment_secret }}"
+      with_items:
+        - "{{ peer_complete_info_list }}"
+
+    - name: Delete organization
+      ibm.blockchain_platform.organization:
+        state: absent
+        api_endpoint: "{{ api_endpoint }}"
+        api_authtype: "{{ api_authtype }}"
+        api_key: "{{ api_key | default(omit) }}"
+        api_secret: "{{ api_secret | default(omit)}}"
+        name: "{{ org.msp.name }}"
+
+    - name: Delete certificate authority
+      ibm.blockchain_platform.certificate_authority:
+        state: absent
+        api_endpoint: "{{ api_endpoint }}"
+        api_authtype: "{{ api_authtype }}"
+        api_key: "{{ api_key | default(omit) }}"
+        api_secret: "{{ api_secret | default(omit)}}"
+        name: "{{ org.ca.name }}"

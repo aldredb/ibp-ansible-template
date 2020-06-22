@@ -6,7 +6,7 @@
   tasks:
     - name: Create Bulk import folder
       file:
-        path: "{{ playbook_dir }}/bulk-import"
+        path: "{{ bulk_import_path }}"
         state: directory
         mode: "0755"
     - name: Insert `identity` field and insert identity JSON files to Bulk import folder
@@ -15,10 +15,10 @@
         - "{{ wallet_path }}/*.json"
     - name: Create a zip archive of {{ playbook_dir }}/bulk-import
       archive:
-        path: "{{ playbook_dir }}/bulk-import"
+        path: "{{ bulk_import_path }}"
         format: zip
         dest: "{{ playbook_dir }}/bulk-import.zip"
     - name: Delete Bulk import folder
       file:
-        path: "{{ playbook_dir }}/bulk-import"
+        path: "{{ bulk_import_path }}"
         state: absent

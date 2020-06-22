@@ -6,11 +6,11 @@ Tested on IBP Ansible Collection version: **0.0.30**
 
 ## Requirements
 
-Before running the scripts, you need to make sure to have the following installed
+Before running the scripts, you need to make sure to have the following installed:
 
-* [Ansible and IBP collection](https://ibm-blockchain.github.io/ansible-collection/installation.html#requirements)
+- [Ansible and IBP collection](https://ibm-blockchain.github.io/ansible-collection/installation.html#requirements)
 
-* YAML parser [`yq` (>= 3.3.2)](https://mikefarah.gitbook.io/yq/) installed.
+- YAML parser [`yq` (>= 3.3.2)](https://mikefarah.gitbook.io/yq/)
 
 ## Getting Started
 
@@ -109,7 +109,7 @@ ansible-playbook 09-create-connection-profile.yaml --extra-vars "peer_org_name=o
 ### Create wallet zip file to be imported to console
 
 ```sh
-ansible-playbook 99-zip-identities-to-wallet.yaml
+ansible-playbook 50-zip-identities-to-wallet.yaml
 ```
 
 Import `bulk-import.zip` to IBP Console

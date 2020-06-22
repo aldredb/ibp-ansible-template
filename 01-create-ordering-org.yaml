@@ -7,7 +7,9 @@
     - vars/organizations.yaml
   vars:
     # org_name: os
-    - org: "{{ vars['ordering_organization'][org_name] }}"
+    org: "{{ vars['ordering_organization'][org_name] }}"
+    enrollment_info: "{{ org.ca.id_list | selectattr('name','equalto', org.orderer.name) | first }}"
+    msp_admin_info: "{{ org.ca.id_list | selectattr('name', 'equalto', org.msp.admin) | list }}"
   tasks:
     - name: Create certificate authority
       ibm.blockchain_platform.certificate_authority:
@@ -85,8 +87,7 @@
         enrollment_id: "{{ msp_admin_info[0].enrollment_id }}"
         enrollment_secret: "{{ msp_admin_info[0].enrollment_secret }}"
         path: "{{ wallet_path }}/{{ org.msp.admin }}.json"
-      vars:
-        msp_admin_info: "{{ org.ca.id_list | selectattr('name', 'equalto', org.msp.admin) | list }}"
+
       register: org_admin
 
     - name: Create organization
@@ -133,5 +134,3 @@
           orderer:
             size: "{{ org.orderer.resource.orderer.storage | default('100Gi') }}"
         wait_timeout: "{{ wait_timeout | default(900) }}"
-      vars:
-        enrollment_info: "{{ org.ca.id_list | selectattr('name','equalto', org.orderer.name) | first }}"
