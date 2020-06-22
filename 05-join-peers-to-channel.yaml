@@ -15,7 +15,7 @@
     # channel_name: samplechannel1
     os_org: "{{ vars['ordering_organization'][os_org_name] }}"
     peer_org: "{{ vars['peer_organizations'][peer_org_name] }}"
-    peer_org_msp_admin: "{{ playbook_dir }}/{{ wallet_path }}/{{ peer_org.msp.admin }}.json"
+    peer_org_msp_admin: "{{ wallet_path }}/{{ peer_org.msp.admin }}.json"
   tasks:
     - name: Fetch the genesis block for the channel
       ibm.blockchain_platform.channel_block:

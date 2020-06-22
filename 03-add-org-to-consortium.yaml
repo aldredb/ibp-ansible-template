@@ -9,7 +9,7 @@
   vars:
     # os_org_name: os
     org: "{{ vars['ordering_organization'][os_org_name] }}"
-    ordering_service_msp_admin: "{{ playbook_dir }}/{{ wallet_path }}/{{ org.msp.admin }}.json"
+    ordering_service_msp_admin: "{{ wallet_path }}/{{ org.msp.admin }}.json"
   tasks:
     - name: Get the ordering service information
       ibm.blockchain_platform.ordering_service_info:

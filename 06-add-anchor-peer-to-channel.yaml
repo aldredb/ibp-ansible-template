@@ -11,11 +11,11 @@
     - vars/channels.yaml
   vars:
     # os_org_name: os
-    # peer_org_name: org1 
-    # channel_name: samplechannel1 
+    # peer_org_name: org1
+    # channel_name: samplechannel1
     os_org: "{{ vars['ordering_organization'][os_org_name] }}"
     peer_org: "{{ vars['peer_organizations'][peer_org_name] }}"
-    peer_org_msp_admin: "{{ playbook_dir }}/{{ wallet_path }}/{{ peer_org.msp.admin }}.json"
+    peer_org_msp_admin: "{{ wallet_path }}/{{ peer_org.msp.admin }}.json"
   tasks:
     - name: Get the ordering service information
       ibm.blockchain_platform.ordering_service_info:

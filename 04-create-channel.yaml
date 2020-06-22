@@ -12,10 +12,10 @@
     # channel_name: samplechannel1
     os_org: "{{ vars['ordering_organization'][os_org_name] }}"
     creator_org: "{{ vars['peer_organizations'][creator_org_name] }}"
-    ordering_service_msp_admin: "{{ playbook_dir }}/{{ wallet_path }}/{{ os_org.msp.admin }}.json"
-    creator_org_msp_admin: "{{ playbook_dir }}/{{ wallet_path }}/{{ creator_org.msp.admin }}.json"
+    ordering_service_msp_admin: "{{ wallet_path }}/{{ os_org.msp.admin }}.json"
+    creator_org_msp_admin: "{{ wallet_path }}/{{ creator_org.msp.admin }}.json"
     channel: "{{ vars['channels'][channel_name] }}"
-    channel_policies_dir: "{{ playbook_dir }}/{{ channel_policies_path }}/{{ channel_name }}"
+    channel_policies_dir: "{{ channel_policies_path }}/{{ channel_name }}"
   tasks:
     - name: Check to see if the channel already exists
       ibm.blockchain_platform.channel_block:

@@ -8,11 +8,11 @@
       file:
         path: "{{ playbook_dir }}/bulk-import"
         state: directory
-        mode: '0755'
+        mode: "0755"
     - name: Insert `identity` field and insert identity JSON files to Bulk import folder
-      shell: "cat '{{ item }}' | jq '. + {type: \"identity\"}' > '{{ playbook_dir }}/bulk-import/{{ item | basename }}'"
+      shell: 'cat ''{{ item }}'' | jq ''. + {type: "identity"}'' > ''{{ playbook_dir }}/bulk-import/{{ item | basename }}'''
       with_fileglob:
-        - "{{ playbook_dir }}/{{ wallet_path }}/*.json"
+        - "{{ wallet_path }}/*.json"
     - name: Create a zip archive of {{ playbook_dir }}/bulk-import
       archive:
         path: "{{ playbook_dir }}/bulk-import"

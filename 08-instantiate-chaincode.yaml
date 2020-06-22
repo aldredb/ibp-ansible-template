@@ -14,8 +14,8 @@
     # cc_name: marbles
     # channel_name: samplechannel1
     peer_org: "{{ vars['peer_organizations'][peer_org_name] }}"
-    peer_org_msp_admin: "{{ playbook_dir }}/{{ wallet_path }}/{{ peer_org.msp.admin }}.json"
-    peer_list: "{{ peer_org.peers | map(attribute='name') | list }}" 
+    peer_org_msp_admin: "{{ wallet_path }}/{{ peer_org.msp.admin }}.json"
+    peer_list: "{{ peer_org.peers | map(attribute='name') | list }}"
     cc: "{{ vars['channels'][channel_name]['chaincodes'][cc_name] }}"
   tasks:
     - name: Instantiate the chaincode on the channel
@@ -36,4 +36,3 @@
         version: "{{ cc.version }}"
         endorsement_policy: "{{ cc.endorsement_policy | default(omit) }}"
         collections_config: "{{ cc.collections_config | default(omit) }}"
-      

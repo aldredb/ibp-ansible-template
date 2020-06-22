@@ -5,16 +5,16 @@
   tasks:
     - name: Create config folder
       file:
-        path: "{{ playbook_dir }}/{{ channel_config_path }}"
+        path: "{{ channel_config_path }}"
         state: directory
-        mode: '0755'
+        mode: "0755"
     - name: Create connection profile folder
       file:
-        path: "{{ playbook_dir }}/{{ connection_profile_path }}"
+        path: "{{ connection_profile_path }}"
         state: directory
-        mode: '0755'
+        mode: "0755"
     - name: Create wallet folder
       file:
-        path: "{{ playbook_dir }}/{{ wallet_path }}"
+        path: "{{ wallet_path }}"
         state: directory
-        mode: '0755'
+        mode: "0755"
