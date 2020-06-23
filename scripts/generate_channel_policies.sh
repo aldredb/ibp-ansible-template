@@ -1,8 +1,9 @@
-#!/bin/sh
-
+#!/usr/bin/env bash
+#
 # Usage: ./path-to-script/generate_channel_policies.sh <CHANNEL_NAME>
 #
-set -e
+
+set -euo pipefail
 
 DIR=$(dirname "$0")
 usage() {
