@@ -42,7 +42,7 @@ if [ ! -d "$DEST_DIR" ]; then
 	mkdir -p "$DEST_DIR"
 fi
 
-NUM_MEMBER=$(yq r "$CONFIG_FILE" --length "channels.$CHANNEL_NAME.members")
+MEMBER_ORGS=$(yq r "$CONFIG_FILE" --printMode p "channels.$CHANNEL_NAME.members.*" | awk -F "." '{print $4}')
 NUM_ADMIN=$(yq r "$CONFIG_FILE" --length "channels.$CHANNEL_NAME.operators")
 NUM_OUT_OF_ADMIN=$(yq r "$CONFIG_FILE" "channels.$CHANNEL_NAME.config_update_policy")
 
@@ -57,8 +57,8 @@ value:
       rules:
   identities:
 EOT
-for i in $(seq 0 "$(expr "$NUM_MEMBER" - 1)"); do
-	org_name=$(yq r "$CONFIG_FILE" "channels.$CHANNEL_NAME".members["$i"])
+i=0
+for org_name in $MEMBER_ORGS; do
 	msp_id=$(yq r "$ORG_CONFIG_FILE" "peer_organizations.$org_name.msp.id")
 
 	# update the policy file
@@ -66,6 +66,7 @@ for i in $(seq 0 "$(expr "$NUM_MEMBER" - 1)"); do
 	yq w -i "$reader_policy_file" "value.identities[$i].principal_classification" "ROLE"
 	yq w -i "$reader_policy_file" "value.identities[$i].principal.msp_identifier" "$msp_id"
 	yq w -i "$reader_policy_file" "value.identities[$i].principal.role" "MEMBER"
+	i=$(expr $i + 1)
 done
 
 echo "Generating writer-policy.yaml for $CHANNEL_NAME"
@@ -79,8 +80,8 @@ value:
       rules:
   identities:
 EOT
-for i in $(seq 0 "$(expr "$NUM_MEMBER" - 1)"); do
-	org_name=$(yq r "$CONFIG_FILE" "channels.$CHANNEL_NAME".members["$i"])
+i=0
+for org_name in $MEMBER_ORGS; do
 	msp_id=$(yq r "$ORG_CONFIG_FILE" "peer_organizations.$org_name.msp.id")
 
 	# update the policy file
@@ -88,6 +89,7 @@ for i in $(seq 0 "$(expr "$NUM_MEMBER" - 1)"); do
 	yq w -i "$writer_policy_file" "value.identities[$i].principal_classification" "ROLE"
 	yq w -i "$writer_policy_file" "value.identities[$i].principal.msp_identifier" "$msp_id"
 	yq w -i "$writer_policy_file" "value.identities[$i].principal.role" "MEMBER"
+	i=$(expr $i + 1)
 done
 
 echo "Generating admin-policy.yaml for $CHANNEL_NAME"
@@ -103,7 +105,7 @@ value:
 EOT
 yq w -i "$admin_policy_file" "value.rule.n_out_of.n" "$NUM_OUT_OF_ADMIN"
 for i in $(seq 0 "$(expr "$NUM_ADMIN" - 1)"); do
-	org_name=$(yq r "$CONFIG_FILE" "channels.$CHANNEL_NAME".members["$i"])
+	org_name=$(yq r "$CONFIG_FILE" "channels.$CHANNEL_NAME".operators["$i"])
 	msp_id=$(yq r "$ORG_CONFIG_FILE" "peer_organizations.$org_name.msp.id")
 
 	# update the policy file

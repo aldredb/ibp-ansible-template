@@ -5,9 +5,16 @@ consortium_members:
 channels:
   samplechannel1:
     members:
-      # has to match the key in peer_organizations
-      - org1
-      - org2
+      org1: # has to match the key in peer_organizations
+        peers:
+          - Org1 Peer1 # has to match the name of the peers
+        anchor_peers:
+          - Org1 Peer1
+      org2:
+        peers:
+          - Org2 Peer1
+        anchor_peers:
+          - Org2 Peer1
     operators:
       - org1
       - org2
@@ -22,7 +29,11 @@ channels:
           endorsement_policy: OR('org1msp.peer','org2msp.peer')
   samplechannel2:
     members:
-      - org1
+      org1:
+        peers:
+          - Org1 Peer1
+        anchor_peers:
+          - Org1 Peer1
     operators:
       - org1
     config_update_policy: 1

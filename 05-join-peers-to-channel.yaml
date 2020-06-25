@@ -44,4 +44,4 @@
         identity: "{{ peer_org_msp_admin }}"
         msp_id: "{{ peer_org.msp.id }}"
         path: "{{ channel_config_path }}/{{ channel_name }}_genesis_block.bin"
-      with_items: "{{ peer_org.peers | map(attribute='name') | list }}"
+      loop: "{{ vars['channels'][channel_name]['members'][peer_org_name]['peers'] }}"

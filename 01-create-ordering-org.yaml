@@ -87,7 +87,6 @@
         enrollment_id: "{{ msp_admin_info[0].enrollment_id }}"
         enrollment_secret: "{{ msp_admin_info[0].enrollment_secret }}"
         path: "{{ wallet_path }}/{{ org.msp.admin }}.json"
-
       register: org_admin
 
     - name: Create organization
