@@ -14,7 +14,6 @@
     creator_org: "{{ vars['peer_organizations'][creator_org_name] }}"
     ordering_service_msp_admin: "{{ wallet_path }}/{{ os_org.msp.admin }}.json"
     creator_org_msp_admin: "{{ wallet_path }}/{{ creator_org.msp.admin }}.json"
-    channel: "{{ vars['channels'][channel_name] }}"
     channel_policies_dir: "{{ channel_policies_path }}/{{ channel_name }}"
   tasks:
     - name: Check to see if the channel already exists
@@ -32,7 +31,19 @@
         target: "0"
         path: "{{ channel_config_path }}/{{ channel_name }}_genesis_block.bin"
       register: result
-      failed_when: result.msg is defined and 'NOT_FOUND' not in result.msg
+      ignore_errors: true
+
+    - name: Exit channel creation if it already exists
+      meta: end_play
+      when: result.msg is not defined or 'NOT_FOUND' not in result.msg
+
+    - shell: |
+        ORGS=$(yq r "{{ playbook_dir }}/vars/channels.yaml" --printMode p "channels.{{ channel_name }}.members.*" | awk -F "." '{print $4}')
+        for org in $ORGS; do yq r "{{ playbook_dir }}/vars/organizations.yaml" "peer_organizations.$org.msp.name"; done
+      register: channel_member_result
+
+    - set_fact:
+        channel_members: "{{ channel_member_result.stdout_lines }}"
 
     - name: Create the configuration update for the new channel
       ibm.blockchain_platform.channel_config:
@@ -49,16 +60,6 @@
           Admins: "{{ lookup('file', '{{ channel_policies_dir }}/admins-policy.yaml') | from_yaml }}"
           Readers: "{{ lookup('file', '{{ channel_policies_dir }}/readers-policy.yaml') | from_yaml }}"
           Writers: "{{ lookup('file', '{{ channel_policies_dir }}/writers-policy.yaml') | from_yaml }}"
-      vars:
-        # Matches the key listed in the channel.members to those of peer_organizations
-        # then extract the MSP name
-        channel_members: "{{ peer_organizations|
-          dict2items|
-          selectattr('key', 'in', channel.members)|
-          list|
-          map(attribute='value.msp.name')|
-          list }}"
-      when: result.msg is defined and 'NOT_FOUND' in result.msg
 
     - name: Sign the channel configuration update for the new channel
       ibm.blockchain_platform.channel_config:
@@ -67,7 +68,6 @@
         msp_id: "{{ creator_org.msp.id }}"
         name: "{{ channel_name }}"
         path: "{{ channel_config_path }}/{{ channel_name }}_config_update.bin"
-      when: result.msg is defined and 'NOT_FOUND' in result.msg
 
     - name: Apply the channel configuration update for the new channel
       ibm.blockchain_platform.channel_config:
@@ -82,4 +82,3 @@
         msp_id: "{{ creator_org.msp.id }}"
         name: "{{ channel_name }}"
         path: "{{ channel_config_path }}/{{ channel_name }}_config_update.bin"
-      when: result.msg is defined and 'NOT_FOUND' in result.msg

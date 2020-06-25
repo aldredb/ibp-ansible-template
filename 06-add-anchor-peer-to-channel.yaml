@@ -60,7 +60,7 @@
         api_secret: "{{ api_secret | default(omit) }}"
         api_token_endpoint: "{{ api_token_endpoint | default(omit) }}"
         organization: "{{ peer_org.msp.name }}"
-        anchor_peers: "{{ peer_org.anchor_peers }}"
+        anchor_peers: "{{ vars['channels'][channel_name]['members'][peer_org_name]['anchor_peers'] }}"
         path: "{{ channel_config_path }}/{{ channel_name }}-updated_config.bin"
 
     - name: Compute the channel configuration update

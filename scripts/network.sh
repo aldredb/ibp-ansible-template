@@ -8,21 +8,16 @@ ACTION=
 OPT_BEFORE_CHANNEL=false
 OPT_BEFORE_JOIN=false
 OPT_BEFORE_CHAINCODE=false
-OPT_ONLY_PEER_ORGS=false
-OPT_ONLY_ORDERING=false
 
 function usage() {
 	echo "usage: $0 [OPTIONS] [up|down]" 1>&2
 	echo
 	echo "[OPTIONS]"
 	echo "-h                    help message"
-	echo "-b  [BREAKPOINT]      Setup/Teardown until a breakpoint"
+	echo "-b  [BREAKPOINT]      Setup until a breakpoint"
 	echo "    before-channel    Setup until channel creation (all ordering, peer orgs created)"
 	echo "    before-join       Setup until peer join channel (all ordering, peer orgs, channel created)"
 	echo "    before-chaincode  Setup until chaincode installation"
-	echo
-	echo "    only-peer-orgs    Delete only peer orgs"
-	echo "    only-ordering     Delete only ordering orgs"
 }
 
 function cmd_exists() {
@@ -64,12 +59,6 @@ while getopts ":hb:" opt; do
 		before-chaincode)
 			OPT_BEFORE_CHAINCODE=true
 			;;
-		only-peer-orgs)
-			OPT_ONLY_PEER_ORGS=true
-			;;
-		only-ordering)
-			OPT_ONLY_ORDERING=true
-			;;
 		\?)
 			echo "Invalid FLAGS: --$OPTARG" 1>&2
 			usage
@@ -95,12 +84,12 @@ printf "%s" "🔍 Checking required tools ... "
 check_dep
 echo "done"
 
-# update to ansible-collection to the latest
-ansible-galaxy collection install ibm.blockchain_platform -f
-
 case "$ACTION" in
 up)
-	printf "%s" "🚀 Setting up your IBP Platform ... "
+	# update to ansible-collection to the latest
+	# ansible-galaxy collection install ibm.blockchain_platform -f
+
+	echo "🚀 Setting up your IBP Platform ... "
 	ansible-playbook 00-create-folders.yaml
 	ansible-playbook 01-create-ordering-org.yaml --extra-vars "org_name=os"
 	ansible-playbook 02-create-peer-orgs.yaml --extra-vars "org_name=org1"
@@ -135,18 +124,11 @@ up)
 	success_exit
 	;;
 down)
-	printf "%s" "🧹 Tearing down ... "
+	echo "🧹 Tearing down ... "
 	ansible-playbook 91-delete-connection-profile.yaml --extra-vars "peer_org_name=org1"
-	if ! "$OPT_ONLY_PEER_ORGS"; then
-		ansible-playbook 98-delete-peer-orgs.yaml --extra-vars "org_name=org1"
-		ansible-playbook 98-delete-peer-orgs.yaml --extra-vars "org_name=org2"
-		success_exit
-	fi
-	if ! "$OPT_ONLY_ORDERING"; then
-		ansible-playbook 99-delete-ordering-org.yaml --extra-vars "org_name=os"
-		success_exit
-	fi
-
+	ansible-playbook 98-delete-peer-orgs.yaml --extra-vars "org_name=org1"
+	ansible-playbook 98-delete-peer-orgs.yaml --extra-vars "org_name=org2"
+	ansible-playbook 99-delete-ordering-org.yaml --extra-vars "org_name=os"
 	ansible-playbook 100-delete-folders.yaml
 	success_exit
 	;;
