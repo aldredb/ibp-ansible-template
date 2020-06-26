@@ -7,7 +7,8 @@
     - vars/organizations.yaml
   vars:
     # org_name: org1
-    - org: "{{ vars['peer_organizations'][org_name] }}"
+    org: "{{ vars['peer_organizations'][org_name] }}"
+    org_config_file: "{{ playbook_dir }}/vars/organizations.yaml"
   tasks:
     - name: Create certificate authority
       ibm.blockchain_platform.certificate_authority:
@@ -102,12 +103,16 @@
         admins:
           - "{{ org_admin.enrolled_identity.cert }}"
 
+    - shell: yq r {{ org_config_file }} 'peer_organizations.{{org_name}}.peers[*].name'
+      register: peer_list_output
+    - set_fact:
+        peer_list: "{{ peer_list_output.stdout_lines }}"
+
     - name: Construct peer complete information list
       set_fact:
         # Merge information in org.peers and org.ca.id_list
         peer_complete_info_list: "{{ peer_complete_info_list | default([]) + [org.peers | selectattr('name','equalto', item) | first | combine(org.ca.id_list | selectattr('name','equalto', item) | first)] }}"
-      with_items:
-        - "{{ org.peers | map(attribute='name') | list }}"
+      loop: "{{ peer_list }}"
 
     - name: Create peer(s)
       ibm.blockchain_platform.peer:
@@ -149,5 +154,4 @@
           statedb:
             size: "{{ item.resource.couchdb.storage | default('100Gi') }}"
         wait_timeout: "{{ wait_timeout | default(1800) }}"
-      with_items:
-        - "{{ peer_complete_info_list }}"
+      loop: "{{ peer_complete_info_list }}"
