@@ -43,6 +43,7 @@ if [ ! -d "$DEST_DIR" ]; then
 fi
 
 MEMBER_ORGS=$(yq r "$CONFIG_FILE" --printMode p "channels.$CHANNEL_NAME.members.*" | awk -F "." '{print $4}')
+NUM_WRITER=$(yq r "$CONFIG_FILE" --length "channels.$CHANNEL_NAME.writers")
 NUM_ADMIN=$(yq r "$CONFIG_FILE" --length "channels.$CHANNEL_NAME.operators")
 NUM_OUT_OF_ADMIN=$(yq r "$CONFIG_FILE" "channels.$CHANNEL_NAME.config_update_policy")
 
@@ -80,8 +81,8 @@ value:
       rules:
   identities:
 EOT
-i=0
-for org_name in $MEMBER_ORGS; do
+for i in $(seq 0 "$(expr "$NUM_WRITER" - 1)"); do
+	org_name=$(yq r "$CONFIG_FILE" "channels.$CHANNEL_NAME".writers["$i"])
 	msp_id=$(yq r "$ORG_CONFIG_FILE" "peer_organizations.$org_name.msp.id")
 
 	# update the policy file
@@ -89,7 +90,6 @@ for org_name in $MEMBER_ORGS; do
 	yq w -i "$writer_policy_file" "value.identities[$i].principal_classification" "ROLE"
 	yq w -i "$writer_policy_file" "value.identities[$i].principal.msp_identifier" "$msp_id"
 	yq w -i "$writer_policy_file" "value.identities[$i].principal.role" "MEMBER"
-	i=$(expr $i + 1)
 done
 
 echo "Generating admin-policy.yaml for $CHANNEL_NAME"

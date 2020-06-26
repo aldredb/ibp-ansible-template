@@ -15,6 +15,10 @@ channels:
           - Org2 Peer1
         anchor_peers:
           - Org2 Peer1
+    # By default, all members are readers
+    writers:
+      - org1
+      - org2
     operators:
       - org1
       - org2
@@ -34,6 +38,9 @@ channels:
           - Org1 Peer1
         anchor_peers:
           - Org1 Peer1
+    # By default, all members are readers
+    writers:
+      - org1
     operators:
       - org1
     config_update_policy: 1
