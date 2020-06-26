@@ -14,7 +14,13 @@
     peer_org: "{{ vars['peer_organizations'][peer_org_name] }}"
     peer_org_msp_admin: "{{ wallet_path }}/{{ peer_org.msp.admin }}.json"
     cc: "{{ vars['chaincodes'][cc_name] }}"
+    org_config_file: "{{ playbook_dir }}/vars/organizations.yaml"
   tasks:
+    - shell: yq r {{ org_config_file }} 'peer_organizations.{{peer_org_name}}.peers[*].name'
+      register: peer_list_output
+    - set_fact:
+        peer_list: "{{ peer_list_output.stdout_lines }}"
+
     - name: Install the chaincode on the peer
       ibm.blockchain_platform.installed_chaincode:
         api_endpoint: "{{ api_endpoint }}"
@@ -26,4 +32,4 @@
         identity: "{{ peer_org_msp_admin }}"
         msp_id: "{{ peer_org.msp.id }}"
         path: "{{ cc_path }}"
-      with_items: "{{ peer_org.peers | map(attribute='name') | list }}"
+      loop: "{{ peer_list }}"

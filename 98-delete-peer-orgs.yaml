@@ -8,13 +8,18 @@
   vars:
     # org_name: org1
     org: "{{ vars['peer_organizations'][org_name] }}"
+    org_config_file: "{{ playbook_dir }}/vars/organizations.yaml"
   tasks:
+    - shell: yq r {{ org_config_file }} 'peer_organizations.{{org_name}}.peers[*].name'
+      register: peer_list_output
+    - set_fact:
+        peer_list: "{{ peer_list_output.stdout_lines }}"
+
     - name: Construct peer complete information list
       set_fact:
         # Merge information in org.peers and org.ca.id_list
         peer_complete_info_list: "{{ peer_complete_info_list | default([]) + [org.peers | selectattr('name','equalto', item) | first | combine(org.ca.id_list | selectattr('name','equalto', item) | first)] }}"
-      with_items:
-        - "{{ org.peers | map(attribute='name') | list }}"
+      loop: "{{ peer_list }}"
 
     - name: Get org admin identity
       ibm.blockchain_platform.enrolled_identity_info:
@@ -34,8 +39,7 @@
           - "{{ org_admin.enrolled_identity.cert }}"
         enrollment_id: "{{ item.enrollment_id }}"
         enrollment_secret: "{{ item.enrollment_secret }}"
-      with_items:
-        - "{{ peer_complete_info_list }}"
+      loop: "{{ peer_complete_info_list }}"
 
     - name: Delete organization
       ibm.blockchain_platform.organization:
