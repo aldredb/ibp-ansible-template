@@ -28,7 +28,7 @@ RUN cd /go/src/github.com/hyperledger/fabric \
 # In the third stage, copy all the installed Python modules across from the first stage and the Hyperledger
 # Fabric binaries from the second stage.
 # Also install https://github.com/mikefarah/yq
-FROM python:3.8-alpine
+FROM registry.access.redhat.com/ubi8/ubi-minimal
 COPY --from=builder /root/.local /root/.local
 COPY --from=builder /root/.ansible /root/.ansible
 COPY --from=fabric /go/src/github.com/hyperledger/fabric/build/bin /opt/fabric/bin
@@ -36,6 +36,6 @@ COPY --from=fabric /go/src/github.com/hyperledger/fabric/sampleconfig /opt/fabri
 COPY --from=fabric /go/src/github.com/hyperledger/fabric/sampleconfig /opt/fabric/config
 ENV FABRIC_CFG_PATH=/opt/fabric/config
 ENV PATH=/opt/fabric/bin:/root/.local/bin:$PATH
-RUN apk --no-cache add curl \
-    && curl -L https://github.com/mikefarah/yq/releases/download/3.3.1/yq_linux_amd64 -o /usr/local/bin/yq \
+RUN curl -L https://github.com/mikefarah/yq/releases/download/3.3.1/yq_linux_amd64 -o /usr/local/bin/yq \
     && chmod +x /usr/local/bin/yq
+RUN microdnf install python38
