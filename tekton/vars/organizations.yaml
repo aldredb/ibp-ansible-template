@@ -1,0 +1,165 @@
+ordering_organization:
+  os:
+    ca:
+      name: "OS CA"
+      zone: tok02
+      version: "1.4.7-0"
+      admin_name: "OS CA Admin"
+      admin_enrollment_id: "admin"
+      admin_enrollment_secret: "adminpw"
+      id_list:
+        - name: "OS MSP Admin"
+          enrollment_id: "orgadmin"
+          enrollment_secret: "orgadminpw"
+          type: admin
+        - name: "Orderer"
+          enrollment_id: "os"
+          enrollment_secret: "ospw"
+          type: orderer
+        - name: "OS Monitoring User"
+          enrollment_id: "monitoring"
+          enrollment_secret: "monitoringpw"
+          type: client
+      resource:
+        vcpu: 100m
+        memory: 200M
+        storage: 20Gi
+    msp:
+      name: "OS MSP"
+      id: "osmsp"
+      admin: "OS MSP Admin"
+    orderer:
+      name: Orderer # has to match one  of the names in id_list
+      zones:
+        - tok02
+        - tok02
+        - tok04
+        - tok04
+        - tok05
+      nodes: 5
+      version: "2.1.1-0"
+      resource:
+        orderer:
+          vcpu: 350m
+          memory: 500M
+          storage: 20Gi
+        proxy:
+          vcpu: 100m
+          memory: 200M
+
+peer_organizations:
+  org1:
+    ca:
+      name: "Org1 CA"
+      zone: tok04
+      version: "1.4.7-0"
+      admin_name: "Org1 CA Admin"
+      admin_enrollment_id: "admin"
+      admin_enrollment_secret: "adminpw"
+      id_list:
+        - name: "Org1 MSP Admin"
+          enrollment_id: "orgadmin"
+          enrollment_secret: "orgadminpw"
+          type: admin
+        - name: "Org1 Peer1"
+          enrollment_id: "peer1"
+          enrollment_secret: "peer1pw"
+          type: peer
+        - name: "Org1 Peer2"
+          enrollment_id: "peer2"
+          enrollment_secret: "peer2pw"
+          type: peer
+        - name: "Org1 User1"
+          enrollment_id: "user1"
+          enrollment_secret: "user1pw"
+          type: client
+        - name: "Org1 Monitoring User"
+          enrollment_id: "monitoring"
+          enrollment_secret: "monitoringpw"
+          type: client
+      resource:
+        vcpu: 100m
+        memory: 200M
+        storage: 20Gi
+    msp:
+      name: "Org1 MSP"
+      id: "org1msp"
+      admin: "Org1 MSP Admin"
+    peers: # name has to match the name(s) in id_list
+      - name: Org1 Peer1
+        state_db: couchdb
+        zone: "tok05"
+        version: "2.1.1-0"
+        resource:
+          peer:
+            vcpu: 400m
+            memory: 400M
+            storage: 20Gi
+          couchdb:
+            vcpu: 400m
+            memory: 400M
+            storage: 20Gi
+          dind:
+            vcpu: 500m
+            memory: 1000M
+          proxy:
+            vcpu: 100m
+            memory: 200M
+
+  org2:
+    ca:
+      name: "Org2 CA"
+      zone: tok05
+      version: "1.4.7-0"
+      admin_name: "Org2 CA Admin"
+      admin_enrollment_id: "admin"
+      admin_enrollment_secret: "adminpw"
+      id_list:
+        - name: "Org2 MSP Admin"
+          enrollment_id: "orgadmin"
+          enrollment_secret: "orgadminpw"
+          type: admin
+        - name: "Org2 Peer1"
+          enrollment_id: "peer1"
+          enrollment_secret: "peer1pw"
+          type: peer
+        - name: "Org2 Peer2"
+          enrollment_id: "peer2"
+          enrollment_secret: "peer2pw"
+          type: peer
+        - name: "Org2 User1"
+          enrollment_id: "user1"
+          enrollment_secret: "user1pw"
+          type: client
+        - name: "Org2 Monitoring User"
+          enrollment_id: "monitoring"
+          enrollment_secret: "monitoringpw"
+          type: client
+      resource:
+        vcpu: 100m
+        memory: 200M
+        storage: 20Gi
+    msp:
+      name: "Org2 MSP"
+      id: "org2msp"
+      admin: "Org2 MSP Admin"
+    peers: # name has to match the name(s) in id_list
+      - name: Org2 Peer1
+        state_db: couchdb
+        zone: "tok04"
+        version: "2.1.1-0"
+        resource:
+          peer:
+            vcpu: 400m
+            memory: 400M
+            storage: 20Gi
+          couchdb:
+            vcpu: 400m
+            memory: 400M
+            storage: 20Gi
+          dind:
+            vcpu: 500m
+            memory: 1000M
+          proxy:
+            vcpu: 100m
+            memory: 200M

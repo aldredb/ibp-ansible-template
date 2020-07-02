@@ -7,8 +7,7 @@ api_authtype: ibmcloud
 
 # If authtype=ibmcloud, insert API key
 # If authtype=basic, insert console username
-api_key: DJN9wJZ-jarMMC7E9ZpLEH0rewDirOTPRzFOoKQYXIXE
-
+api_key: <insert-api-key>
 # If authtype=ibmcloud, omit this field
 # If authtype=basic, insert console password
-# api_secret: 
+# api_secret: <insert-api-secret>
