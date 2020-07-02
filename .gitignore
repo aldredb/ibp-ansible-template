@@ -14,4 +14,6 @@ spike*
 
 # NOTE: uncomment in Production since vars/ contains secrets
 # vars
-vars/api.yaml
+vars/*
+!vars/common.yaml
+!vars/*.template.yaml

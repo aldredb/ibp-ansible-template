@@ -56,10 +56,12 @@ Now you could open your IBP console in your browser and change your initial defa
 ### Create api variable file
 
 ```sh
-cp vars/api.yaml.template vars/api.yaml
+mv vars/api.template.yaml vars/api.yaml
+mv vars/organizations.template.yaml vars/organizations.yaml
+mv vars/channel.template.yaml vars/channel.yaml
 ```
 
-Fill in `vars/api.yaml`
+Fill in `vars/api.yaml`, `vars/organizations.yaml`, `vars/channels.yaml` with your configuration details (be careful about some data consistency requirements specified in the code comments)
 
 ### Create CA, Peers, Ordering Service, Org Def, Channel, Chaincode and all
 

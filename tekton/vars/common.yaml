@@ -1,0 +1,7 @@
+channel_config_path: "{{ playbook_dir }}/config"
+wallet_path: "{{ playbook_dir }}/wallet"
+connection_profile_path: "{{ playbook_dir }}/connection-profiles"
+channel_policies_path: "{{ playbook_dir }}/channel-policies"
+bulk_import_path: "{{ playbook_dir }}/bulk-import"
+wait_timeout: 3600 # 60 minute timeout
+state: present
