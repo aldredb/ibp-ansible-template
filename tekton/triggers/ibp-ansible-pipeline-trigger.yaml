@@ -1,0 +1,105 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pipeline-account
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: ibp-ansible-test-tt
+spec:
+  params:
+    - name: git-url
+      description: IBP Ansible Template git repo url
+      default: "https://jp-tok.git.cloud.ibm.com/ap-blockchain/ibp-ansible-template"
+    - name: git-revision
+      description: git revision to checkout (branch, tag, sha, ref…)
+      default: master
+    - name: api_endpoint
+      description: ibp console address
+    - name: api_authtype
+      description: ibmcloud (for IBP Sass) or basic (for IBP SW)
+    - name: api_key
+      description: api key for IBP SaaS or password for IBP SW
+  resourceTemplate:
+    - apiversion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: ibp-ansible-run-
+      spec:
+        pipelineRef:
+          name: clone-and-test-pipeline
+        serviceAccountName: pipeline-account
+        params:
+          - name: git-url
+            value: $(params.git-url)
+          - name: git-revision
+            value: $(params.git-revision)
+          - name: api_endpoint
+            value: $(params.api_endpoint)
+          - name: api_authtype
+            value: $(params.api_authtype)
+          - name: api_secret
+            value: $(params.api_secret)
+        workspaces:
+          - name: git-source
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  Requests:
+                    storage: 2Gi
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: ibp-ansible-test-tb-push
+spec:
+  params:
+    # GitLab API https://docs.gitlab.com/ee/user/project/integrations/webhooks.html
+    - name: git-url
+      value: $(body.repository.url)
+    - name: git-revision
+      value: $(body.checkout_sha)
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: ibp-ansible-test-tb-merge
+spec:
+  params:
+    # GitLab API https://docs.gitlab.com/ee/user/project/integrations/webhooks.html
+    - name: git-url
+      value: $(body.repository.url)
+    - name: git-revision
+      value: $(body.last_commit.id)
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: ibp-ansible-test-el
+spec:
+  triggers:
+    - name: push-trigger
+      interceptors:
+        - gitlab:
+            eventTypes:
+              - Push Hook
+      bindings:
+        - name: ibp-ansible-test-tb-push
+      template:
+        name: ibp-ansible-test-tt
+    - name: merge-request-trigger
+      interceptors:
+        - gitlab:
+            eventTypes:
+              - Merge Request Hook
+        # cel interceptor: https://tekton.dev/docs/triggers/eventlisteners/#cel-interceptors
+        - cel:
+            filter: "body.work_in_progress == false"
+      bindings:
+        - name: ibp-ansible-test-tb-merge
+      template:
+        name: ibp-ansible-test-tt
