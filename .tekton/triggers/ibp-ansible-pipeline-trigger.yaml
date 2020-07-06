@@ -1,10 +1,5 @@
 ---
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: pipeline-account
----
-apiVersion: triggers.tekton.dev/v1alpha1
+apiVersion: tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
   name: ibp-ansible-test-tt
@@ -23,6 +18,10 @@ spec:
     - name: api_key
       description: api key for IBP SaaS or password for IBP SW
   resourceTemplate:
+    - apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: pipeline-account
     - apiversion: tekton.dev/v1beta1
       kind: PipelineRun
       metadata:
@@ -52,54 +51,48 @@ spec:
                   Requests:
                     storage: 2Gi
 ---
-apiVersion: triggers.tekton.dev/v1alpha1
+apiVersion: tekton.dev/v1beta1
 kind: TriggerBinding
 metadata:
   name: ibp-ansible-test-tb-push
 spec:
   params:
-    # GitLab API https://docs.gitlab.com/ee/user/project/integrations/webhooks.html
+    # GitLab API https://docs.gitlab.com/ee/user/project/integrations/webhooks.html#push-events
     - name: git-url
       value: $(body.repository.url)
     - name: git-revision
       value: $(body.checkout_sha)
 ---
-apiVersion: triggers.tekton.dev/v1alpha1
+apiVersion: tekton.dev/v1beta1
 kind: TriggerBinding
 metadata:
   name: ibp-ansible-test-tb-merge
 spec:
   params:
-    # GitLab API https://docs.gitlab.com/ee/user/project/integrations/webhooks.html
+    # Gitlab API: https://docs.gitlab.com/ee/user/project/integrations/webhooks.html#merge-request-events
     - name: git-url
       value: $(body.repository.url)
     - name: git-revision
       value: $(body.last_commit.id)
 ---
-apiVersion: triggers.tekton.dev/v1alpha1
+apiVersion: tekton.dev/v1beta1
 kind: EventListener
 metadata:
-  name: ibp-ansible-test-el
+  name: ibp-ansible-test-el-push
 spec:
   triggers:
-    - name: push-trigger
-      interceptors:
-        - gitlab:
-            eventTypes:
-              - Push Hook
-      bindings:
-        - name: ibp-ansible-test-tb-push
+    - binding:
+        name: ibp-ansible-test-tb-push
       template:
         name: ibp-ansible-test-tt
-    - name: merge-request-trigger
-      interceptors:
-        - gitlab:
-            eventTypes:
-              - Merge Request Hook
-        # cel interceptor: https://tekton.dev/docs/triggers/eventlisteners/#cel-interceptors
-        - cel:
-            filter: "body.work_in_progress == false"
-      bindings:
-        - name: ibp-ansible-test-tb-merge
+---
+apiVersion: tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: ibp-ansible-test-el-merge
+spec:
+  triggers:
+    - binding:
+        name: ibp-ansible-test-tb-merge
       template:
         name: ibp-ansible-test-tt
