@@ -33,7 +33,7 @@ fi
 
 # check CHANNEL_NAME exists in config file
 if ! yq r -e "$CONFIG_FILE" "channels.$CHANNEL_NAME" >/dev/null; then
-	echo "Invalid CHANNEL_NAME, please check your vars/channels.yaml"
+	echo "Invalid CHANNEL_NAME: $CHANNEL_NAME, please check your vars/channels.yaml"
 	exit 1
 fi
 

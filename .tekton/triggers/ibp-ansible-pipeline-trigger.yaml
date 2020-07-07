@@ -70,7 +70,7 @@ spec:
   params:
     # GitLab API https://docs.gitlab.com/ee/user/project/integrations/webhooks.html#push-events
     - name: git-revision
-      value: $(body.checkout_sha)
+      value: $(event.checkout_sha)
     - name: trigger-name
       value: "gitlab-push"
 ---
@@ -82,7 +82,7 @@ spec:
   params:
     # Gitlab API: https://docs.gitlab.com/ee/user/project/integrations/webhooks.html#merge-request-events
     - name: git-revision
-      value: $(body.last_commit.id)
+      value: $(event.last_commit.id)
     - name: trigger-name
       value: "gitlab-mergerequest"
 ---
