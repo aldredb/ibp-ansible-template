@@ -21,7 +21,6 @@ spec:
         #!/bin/bash
         # copying dummy vars for testing
         cp -rv .tekton/vars/*.yaml vars/
-        cat vars/channels.yaml
         # putting env var into /vars/api.yaml
         cat <<EOF > ./vars/api.yaml
         # This is manually generated api.yaml from env vars

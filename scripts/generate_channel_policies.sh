@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-DIR=$(dirname "$0")
+DIR=$(dirname $(dirname "$0"))
 usage() {
 	echo "usage: $0 <CHANNEL_NAME>"
 }
@@ -14,10 +14,10 @@ if [ ! $# -eq 1 ]; then
 	exit 1
 fi
 
-CONFIG_FILE="$DIR/../vars/channels.yaml"
-ORG_CONFIG_FILE="$DIR/../vars/organizations.yaml"
+CONFIG_FILE="$DIR/vars/channels.yaml"
+ORG_CONFIG_FILE="$DIR/vars/organizations.yaml"
 CHANNEL_NAME="$1"
-DEST_DIR="$DIR/../channel-policies/$CHANNEL_NAME"
+DEST_DIR="$DIR/channel-policies/$CHANNEL_NAME"
 
 # check the channel config file exists
 if [ ! -f "$CONFIG_FILE" ] || [ ! -f "$ORG_CONFIG_FILE" ]; then
@@ -32,7 +32,7 @@ if ! [ -x "$(command -v yq)" ]; then
 fi
 
 # check CHANNEL_NAME exists in config file
-if ! yq r -e "$CONFIG_FILE" "channels.$CHANNEL_NAME" >/dev/null; then
+if [ -z "$(yq r "$CONFIG_FILE" "channels.$CHANNEL_NAME")" ]; then
 	echo "Invalid CHANNEL_NAME: $CHANNEL_NAME, please check your vars/channels.yaml"
 	exit 1
 fi
