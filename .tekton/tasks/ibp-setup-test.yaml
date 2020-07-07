@@ -4,11 +4,11 @@ metadata:
   name: ibp-setup-test
 spec:
   params:
-    - name: api_endpoint
+    - name: api-endpoint
       description: ibp console address
-    - name: api_authtype
+    - name: api-authtype
       description: ibmcloud (for IBP Sass) or basic (for IBP SW)
-    - name: api_key
+    - name: api-key
       description: api key for IBP SaaS or password for IBP SW
   workspaces:
     - name: source
@@ -20,13 +20,13 @@ spec:
       script: |
         #!/bin/bash
         # copying dummy vars for testing
-        cp -rv tekton/vars/*.yaml /vars/
+        cp -rv tekton/vars/*.yaml vars/
         # putting env var into /vars/api.yaml
         cat <<EOF > ./vars/api.yaml
         # This is manually generated api.yaml from env vars
-        api_endpoint: $(params.api_endpoint)
-        api_authtype: $(params.api_authtype)
-        api_key: $(params.api_key)
+        api_endpoint: $(params.api-endpoint)
+        api_authtype: $(params.api-authtype)
+        api_key: $(params.api-key)
         EOF
         # log out for debugging
         cat vars/api.yaml

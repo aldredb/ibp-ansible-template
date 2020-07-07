@@ -11,11 +11,11 @@ spec:
       description: IBP Ansible Template git repo url
     - name: git-revision
       description: git revision to checkout (branch, tag, sha, ref…)
-    - name: api_endpoint
+    - name: api-endpoint
       description: ibp console address
-    - name: api_authtype
+    - name: api-authtype
       description: ibmcloud (for IBP Sass) or basic (for IBP SW)
-    - name: api_key
+    - name: api-key
       description: api key for IBP SaaS or password for IBP SW
   tasks:
     - name: clone-repo
@@ -40,9 +40,9 @@ spec:
         - name: source
           workspace: git-source
       params:
-        - name: api_endpoint
-          value: $(params.api_endpoint)
-        - name: api_authtype
-          value: $(params.api_authtype
-        - name: api_key
-          value: $(params.api_key)
+        - name: api-endpoint
+          value: $(params.api-endpoint)
+        - name: api-authtype
+          value: $(params.api-authtype)
+        - name: api-key
+          value: $(params.api-key)
