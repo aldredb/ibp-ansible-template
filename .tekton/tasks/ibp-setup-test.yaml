@@ -32,7 +32,7 @@ spec:
         STATUS_CODE=0
         # set up ibp network and all components
         ./scripts/network.sh up
-        if [ "#?" != 0 ]; then
+        if [ "$?" != 0 ]; then
         STATUS_CODE=1
         fi
 
