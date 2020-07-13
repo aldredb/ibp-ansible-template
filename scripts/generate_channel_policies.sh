@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-DIR=$(dirname "$0")
+DIR=$(dirname $(dirname "$0"))
 usage() {
 	echo "usage: $0 <CHANNEL_NAME>"
 }
@@ -14,10 +14,10 @@ if [ ! $# -eq 1 ]; then
 	exit 1
 fi
 
-CONFIG_FILE="$DIR/../vars/channels.yaml"
-ORG_CONFIG_FILE="$DIR/../vars/organizations.yaml"
+CONFIG_FILE="$DIR/vars/channels.yaml"
+ORG_CONFIG_FILE="$DIR/vars/organizations.yaml"
 CHANNEL_NAME="$1"
-DEST_DIR="$DIR/../channel-policies/$CHANNEL_NAME"
+DEST_DIR="$DIR/channel-policies/$CHANNEL_NAME"
 
 # check the channel config file exists
 if [ ! -f "$CONFIG_FILE" ] || [ ! -f "$ORG_CONFIG_FILE" ]; then
@@ -32,8 +32,8 @@ if ! [ -x "$(command -v yq)" ]; then
 fi
 
 # check CHANNEL_NAME exists in config file
-if ! yq r -e "$CONFIG_FILE" "channels.$CHANNEL_NAME" >/dev/null; then
-	echo "Invalid CHANNEL_NAME, please check your vars/channels.yaml"
+if [ -z "$(yq r "$CONFIG_FILE" "channels.$CHANNEL_NAME")" ]; then
+	echo "Invalid CHANNEL_NAME: $CHANNEL_NAME, please check your vars/channels.yaml"
 	exit 1
 fi
 
@@ -47,7 +47,7 @@ NUM_WRITER=$(yq r "$CONFIG_FILE" --length "channels.$CHANNEL_NAME.writers")
 NUM_ADMIN=$(yq r "$CONFIG_FILE" --length "channels.$CHANNEL_NAME.operators")
 NUM_OUT_OF_ADMIN=$(yq r "$CONFIG_FILE" "channels.$CHANNEL_NAME.config_update_policy")
 
-echo "Generating reader-policy.yaml for $CHANNEL_NAME"
+echo "Generating readers-policy.yaml for $CHANNEL_NAME"
 reader_policy_file="$DEST_DIR/readers-policy.yaml"
 cat <<EOT >"$reader_policy_file"
 type: 1
@@ -70,7 +70,7 @@ for org_name in $MEMBER_ORGS; do
 	i=$(expr $i + 1)
 done
 
-echo "Generating writer-policy.yaml for $CHANNEL_NAME"
+echo "Generating writers-policy.yaml for $CHANNEL_NAME"
 writer_policy_file="$DEST_DIR/writers-policy.yaml"
 cat <<EOT >"$writer_policy_file"
 type: 1
@@ -92,7 +92,7 @@ for i in $(seq 0 "$(expr "$NUM_WRITER" - 1)"); do
 	yq w -i "$writer_policy_file" "value.identities[$i].principal.role" "MEMBER"
 done
 
-echo "Generating admin-policy.yaml for $CHANNEL_NAME"
+echo "Generating admins-policy.yaml for $CHANNEL_NAME"
 admin_policy_file="$DEST_DIR/admins-policy.yaml"
 cat <<EOT >"$admin_policy_file"
 type: 1

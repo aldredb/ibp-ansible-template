@@ -133,3 +133,7 @@
           orderer:
             size: "{{ org.orderer.resource.orderer.storage | default('100Gi') }}"
         wait_timeout: "{{ wait_timeout | default(900) }}"
+      register: result
+      until: result.msg is not defined or 'Failed' is not in result.msg
+      retries: 3
+      delay: 5
