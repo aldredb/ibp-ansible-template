@@ -15,6 +15,10 @@
         path: "{{ wallet_path }}/{{ org.msp.admin }}.json"
       register: org_admin
 
+    - name: Exit ordering org deletion if the org does not exist
+      meta: end_play
+      when: org_admin.exists is false
+
     - name: Delete ordering service
       ibm.blockchain_platform.ordering_service:
         state: absent
