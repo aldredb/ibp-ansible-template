@@ -15,7 +15,8 @@
     ordering_service_msp_admin: "{{ wallet_path }}/{{ os_org.msp.admin }}.json"
     creator_org_msp_admin: "{{ wallet_path }}/{{ creator_org.msp.admin }}.json"
     channel_policies_dir: "{{ channel_policies_path }}/{{ channel_name }}"
-    org_config_file: "{{ playbook_dir }}/vars/channels.yaml"
+    channel_config_file: "{{ playbook_dir }}/vars/channels.yaml"
+    org_config_file: "{{ playbook_dir }}/vars/organizations.yaml"
   tasks:
     - name: Check to see if the channel already exists
       ibm.blockchain_platform.channel_block:
@@ -39,10 +40,9 @@
       when: result.msg is not defined or 'NOT_FOUND' not in result.msg
 
     - shell: |
-        ORGS=$(yq r "{{ org_config_file }}" --printMode p "channels.{{ channel_name }}.members.*" | awk -F "." '{print $4}')
+        ORGS=$(yq r "{{ channel_config_file }}" --printMode p "channels.{{ channel_name }}.members.*" | awk -F "." '{print $4}')
         for org in $ORGS; do yq r "{{ org_config_file }}" "peer_organizations.$org.msp.name"; done
       register: channel_member_result
-
     - set_fact:
         channel_members: "{{ channel_member_result.stdout_lines }}"
 

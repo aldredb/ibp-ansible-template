@@ -47,7 +47,7 @@ NUM_WRITER=$(yq r "$CONFIG_FILE" --length "channels.$CHANNEL_NAME.writers")
 NUM_ADMIN=$(yq r "$CONFIG_FILE" --length "channels.$CHANNEL_NAME.operators")
 NUM_OUT_OF_ADMIN=$(yq r "$CONFIG_FILE" "channels.$CHANNEL_NAME.config_update_policy")
 
-echo "Generating reader-policy.yaml for $CHANNEL_NAME"
+echo "Generating readers-policy.yaml for $CHANNEL_NAME"
 reader_policy_file="$DEST_DIR/readers-policy.yaml"
 cat <<EOT >"$reader_policy_file"
 type: 1
@@ -70,7 +70,7 @@ for org_name in $MEMBER_ORGS; do
 	i=$(expr $i + 1)
 done
 
-echo "Generating writer-policy.yaml for $CHANNEL_NAME"
+echo "Generating writers-policy.yaml for $CHANNEL_NAME"
 writer_policy_file="$DEST_DIR/writers-policy.yaml"
 cat <<EOT >"$writer_policy_file"
 type: 1
@@ -92,7 +92,7 @@ for i in $(seq 0 "$(expr "$NUM_WRITER" - 1)"); do
 	yq w -i "$writer_policy_file" "value.identities[$i].principal.role" "MEMBER"
 done
 
-echo "Generating admin-policy.yaml for $CHANNEL_NAME"
+echo "Generating admins-policy.yaml for $CHANNEL_NAME"
 admin_policy_file="$DEST_DIR/admins-policy.yaml"
 cat <<EOT >"$admin_policy_file"
 type: 1
