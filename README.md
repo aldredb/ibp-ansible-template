@@ -2,7 +2,7 @@
 
 This folder contains ansible scripts, configs to setup a blockchain network on IBP deployed on Openshift in an automated manner, thanks to [IBM ansible collection](https://github.com/IBM-Blockchain/ansible-collection).
 
-Tested on IBP Ansible Collection version: **0.0.30**
+Tested on IBP Ansible Collection version: **0.0.34**
 
 ## Requirements
 
@@ -58,7 +58,7 @@ Now you could open your IBP console in your browser and change your initial defa
 ```sh
 mv vars/api.template.yaml vars/api.yaml
 mv vars/organizations.template.yaml vars/organizations.yaml
-mv vars/channel.template.yaml vars/channel.yaml
+mv vars/channels.template.yaml vars/channels.yaml
 ```
 
 Fill in `vars/api.yaml`, `vars/organizations.yaml`, `vars/channels.yaml` with your configuration details (be careful about some data consistency requirements specified in the code comments)
