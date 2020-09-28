@@ -17,3 +17,5 @@ spike*
 vars/*
 !vars/common.yaml
 !vars/*.template.yaml
+
+kubeconfig
