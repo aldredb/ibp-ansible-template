@@ -2,18 +2,18 @@
 
 Assuming you have set up your IBP and finish specifying your `vars/*.yaml` configurations.
 
-### Create organizations
+## Create organizations
 
 ```sh
 ansible-playbook 00-create-folders.yaml
 
-ansible-playbook 01-create-ordering-org.yaml --extra-vars "org_name=os"
+ansible-playbook 01-create-ordering-org.yaml --extra-vars "org_name=os" -v
 
-ansible-playbook 02-create-peer-orgs.yaml --extra-vars "org_name=org1"
-ansible-playbook 02-create-peer-orgs.yaml --extra-vars "org_name=org2"
+ansible-playbook 02-create-peer-orgs.yaml --extra-vars "org_name=org1" -v
+ansible-playbook 02-create-peer-orgs.yaml --extra-vars "org_name=org2" -v
 ```
 
-### Create channel and join peers to channel
+## Create channel and join peers to channel
 
 ```sh
 ansible-playbook 03-add-org-to-consortium.yaml --extra-vars "os_org_name=os"
@@ -32,16 +32,16 @@ ansible-playbook 06-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=s
 ansible-playbook 06-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=samplechannel1 os_org_name=os peer_org_name=org2" -v
 ```
 
-### Install and instantiate chaincode
+## Install and instantiate chaincode
 
 ```sh
-ansible-playbook 07-install-chaincode.yaml --extra-vars "peer_org_name=org1 cc_path=chaincodes/marbles@v2.cds"
-ansible-playbook 07-install-chaincode.yaml --extra-vars "peer_org_name=org2 cc_path=chaincodes/marbles@v2.cds"
+ansible-playbook 07-install-chaincode.yaml --extra-vars "peer_org_name=org1 cc_path=chaincodes/marbles@v2.cds" -v
+ansible-playbook 07-install-chaincode.yaml --extra-vars "peer_org_name=org2 cc_path=chaincodes/marbles@v2.cds" -v
 
-ansible-playbook 08-instantiate-chaincode.yaml --extra-vars "peer_org_name=org1 channel_name=samplechannel1 cc_name=marbles"
+ansible-playbook 08-instantiate-chaincode.yaml --extra-vars "peer_org_name=org1 channel_name=samplechannel1 cc_name=marbles" -v
 ```
 
-### Create connection profile
+## Create connection profile
 
 ```sh
 ansible-playbook 09-create-connection-profile.yaml --extra-vars "peer_org_name=org1"

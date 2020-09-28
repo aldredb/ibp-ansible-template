@@ -144,10 +144,10 @@
             requests:
               cpu: "{{ item.resource.couchdb.vcpu | default('300m') }}"
               memory: "{{ item.resource.couchdb.memory | default('300M') }}"
-          dind:
+          chaincodelauncher:
             requests:
-              cpu: "{{ item.resource.dind.vcpu | default('300m') }}"
-              memory: "{{ item.resource.dind.memory | default('300m') }}"
+              cpu: "{{ item.resource.chaincodelauncher.vcpu | default('200m') }}"
+              memory: "{{ item.resource.chaincodelauncher.memory | default('400m') }}"
         storage:
           peer:
             size: "{{ item.resource.peer.storage | default('100Gi') }}"

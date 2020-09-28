@@ -99,9 +99,9 @@ peer_organizations:
             vcpu: 400m
             memory: 400M
             storage: 20Gi
-          dind:
-            vcpu: 500m
-            memory: 1000M
+          chaincodelauncher:
+            vcpu: 200m
+            memory: 400M
           proxy:
             vcpu: 100m
             memory: 200M
@@ -157,9 +157,9 @@ peer_organizations:
             vcpu: 400m
             memory: 400M
             storage: 20Gi
-          dind:
-            vcpu: 500m
-            memory: 1000M
+          chaincodelauncher:
+            vcpu: 200m
+            memory: 400M
           proxy:
             vcpu: 100m
             memory: 200M

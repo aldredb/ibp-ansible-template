@@ -2,7 +2,7 @@
 
 This folder contains ansible scripts, configs to setup a blockchain network on IBP deployed on Openshift in an automated manner, thanks to [IBM ansible collection](https://github.com/IBM-Blockchain/ansible-collection).
 
-Tested on IBP Ansible Collection version: **0.0.34**
+Tested on IBP Ansible Collection version: **0.0.45**
 
 ## Requirements
 
