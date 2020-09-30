@@ -16,7 +16,7 @@ ansible-playbook 02-create-peer-orgs.yaml --extra-vars "org_name=org2" -v
 ## Create channel and join peers to channel
 
 ```sh
-ansible-playbook 03-add-org-to-consortium.yaml --extra-vars "os_org_name=os"
+ansible-playbook 03-add-org-to-consortium.yaml --extra-vars "os_org_name=os" -v
 
 ./scripts/generate_channel_policies.sh samplechannel1
 ansible-playbook 04-create-channel.yaml --extra-vars "channel_name=samplechannel1 os_org_name=os creator_org_name=org1" -v
