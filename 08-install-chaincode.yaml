@@ -6,7 +6,6 @@
   hosts: localhost
   vars_files:
     - vars/common.yaml
-    - vars/api.yaml
     - vars/organizations.yaml
   vars:
     # peer_org_name: org1
@@ -23,11 +22,10 @@
 
     - name: Install the chaincode on the peer
       ibm.blockchain_platform.installed_chaincode:
-        api_endpoint: "{{ api_endpoint }}"
-        api_authtype: "{{ api_authtype }}"
-        api_key: "{{ api_key }}"
-        api_secret: "{{ api_secret | default(omit) }}"
-        api_token_endpoint: "{{ api_token_endpoint | default(omit) }}"
+        api_endpoint: "{{ peer_org.console.api_endpoint }}"
+        api_authtype: "{{ peer_org.console.api_authtype }}"
+        api_key: "{{ peer_org.console.api_key }}"
+        api_secret: "{{ peer_org.console.api_secret | default(omit) }}"
         peer: "{{ item }}"
         identity: "{{ peer_org_msp_admin }}"
         msp_id: "{{ peer_org.msp.id }}"

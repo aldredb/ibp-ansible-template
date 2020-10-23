@@ -3,7 +3,6 @@
   hosts: localhost
   vars_files:
     - vars/common.yaml
-    - vars/api.yaml
     - vars/organizations.yaml
     - vars/channels.yaml
   vars:
@@ -13,10 +12,10 @@
   tasks:
     - name: Get the ordering service information
       ibm.blockchain_platform.ordering_service_info:
-        api_endpoint: "{{ api_endpoint }}"
-        api_authtype: "{{ api_authtype }}"
-        api_key: "{{ api_key | default(omit) }}"
-        api_secret: "{{ api_secret | default(omit)}}"
+        api_endpoint: "{{ org.console.api_endpoint }}"
+        api_authtype: "{{ org.console.api_authtype }}"
+        api_key: "{{ org.console.api_key | default(omit) }}"
+        api_secret: "{{ org.console.api_secret | default(omit)}}"
         name: "{{ org.orderer.name }}"
       register: os_info
 
@@ -27,10 +26,10 @@
 
     - name: Fetch the system channel configuration
       ibm.blockchain_platform.channel_config:
-        api_endpoint: "{{ api_endpoint }}"
-        api_authtype: "{{ api_authtype }}"
-        api_key: "{{ api_key }}"
-        api_secret: "{{ api_secret | default(omit) }}"
+        api_endpoint: "{{ org.console.api_endpoint }}"
+        api_authtype: "{{ org.console.api_authtype }}"
+        api_key: "{{ org.console.api_key | default(omit) }}"
+        api_secret: "{{ org.console.api_secret | default(omit)}}"
         operation: fetch
         ordering_service: "{{ org.orderer.name }}"
         identity: "{{ ordering_service_msp_admin }}"
@@ -46,21 +45,20 @@
     - name: Add the organization to the consortium
       ibm.blockchain_platform.consortium_member:
         state: present
-        api_endpoint: "{{ api_endpoint }}"
-        api_authtype: "{{ api_authtype }}"
-        api_key: "{{ api_key }}"
-        api_secret: "{{ api_secret | default(omit) }}"
-        api_token_endpoint: "{{ api_token_endpoint | default(omit) }}"
+        api_endpoint: "{{ org.console.api_endpoint }}"
+        api_authtype: "{{ org.console.api_authtype }}"
+        api_key: "{{ org.console.api_key | default(omit) }}"
+        api_secret: "{{ org.console.api_secret | default(omit)}}"
         organization: "{{ peer_organizations[item].msp.name }}"
         path: "{{ channel_config_path }}/updated_config.bin"
       loop: "{{ consortium_members }}"
 
     - name: Compute the system channel configuration update
       ibm.blockchain_platform.channel_config:
-        api_endpoint: "{{ api_endpoint }}"
-        api_authtype: "{{ api_authtype }}"
-        api_key: "{{ api_key }}"
-        api_secret: "{{ api_secret | default(omit) }}"
+        api_endpoint: "{{ org.console.api_endpoint }}"
+        api_authtype: "{{ org.console.api_authtype }}"
+        api_key: "{{ org.console.api_key | default(omit) }}"
+        api_secret: "{{ org.console.api_secret | default(omit)}}"
         operation: compute_update
         ordering_service: "{{ org.orderer.name }}"
         identity: "{{ ordering_service_msp_admin }}"
@@ -82,10 +80,10 @@
 
     - name: Apply the system channel configuration update
       ibm.blockchain_platform.channel_config:
-        api_endpoint: "{{ api_endpoint }}"
-        api_authtype: "{{ api_authtype }}"
-        api_key: "{{ api_key }}"
-        api_secret: "{{ api_secret | default(omit) }}"
+        api_endpoint: "{{ org.console.api_endpoint }}"
+        api_authtype: "{{ org.console.api_authtype }}"
+        api_key: "{{ org.console.api_key | default(omit) }}"
+        api_secret: "{{ org.console.api_secret | default(omit)}}"
         operation: apply_update
         ordering_service: "{{ org.orderer.name }}"
         identity: "{{ ordering_service_msp_admin }}"

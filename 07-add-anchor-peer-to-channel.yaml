@@ -6,7 +6,6 @@
   hosts: localhost
   vars_files:
     - vars/common.yaml
-    - vars/api.yaml
     - vars/organizations.yaml
     - vars/channels.yaml
   vars:
@@ -19,11 +18,10 @@
   tasks:
     - name: Get the ordering service information
       ibm.blockchain_platform.ordering_service_info:
-        api_endpoint: "{{ api_endpoint }}"
-        api_authtype: "{{ api_authtype }}"
-        api_key: "{{ api_key }}"
-        api_secret: "{{ api_secret | default(omit) }}"
-        api_token_endpoint: "{{ api_token_endpoint | default(omit) }}"
+        api_endpoint: "{{ peer_org.console.api_endpoint }}"
+        api_authtype: "{{ peer_org.console.api_authtype }}"
+        api_key: "{{ peer_org.console.api_key | default(omit) }}"
+        api_secret: "{{ peer_org.console.api_secret | default(omit)}}"
         name: "{{ os_org.orderer.name }}"
       register: ordering_service
 
@@ -34,11 +32,10 @@
 
     - name: Fetch the channel configuration
       ibm.blockchain_platform.channel_config:
-        api_endpoint: "{{ api_endpoint }}"
-        api_authtype: "{{ api_authtype }}"
-        api_key: "{{ api_key }}"
-        api_secret: "{{ api_secret | default(omit) }}"
-        api_token_endpoint: "{{ api_token_endpoint | default(omit) }}"
+        api_endpoint: "{{ peer_org.console.api_endpoint }}"
+        api_authtype: "{{ peer_org.console.api_authtype }}"
+        api_key: "{{ peer_org.console.api_key | default(omit) }}"
+        api_secret: "{{ peer_org.console.api_secret | default(omit)}}"
         ordering_service: "{{ os_org.orderer.name }}"
         identity: "{{ peer_org_msp_admin }}"
         msp_id: "{{ peer_org.msp.id }}"
@@ -54,11 +51,10 @@
     - name: Update the organization
       ibm.blockchain_platform.channel_member:
         state: present
-        api_endpoint: "{{ api_endpoint }}"
-        api_authtype: "{{ api_authtype }}"
-        api_key: "{{ api_key }}"
-        api_secret: "{{ api_secret | default(omit) }}"
-        api_token_endpoint: "{{ api_token_endpoint | default(omit) }}"
+        api_endpoint: "{{ peer_org.console.api_endpoint }}"
+        api_authtype: "{{ peer_org.console.api_authtype }}"
+        api_key: "{{ peer_org.console.api_key | default(omit) }}"
+        api_secret: "{{ peer_org.console.api_secret | default(omit)}}"
         organization: "{{ peer_org.msp.name }}"
         anchor_peers: "{{ vars['channels'][channel_name]['members'][peer_org_name]['anchor_peers'] }}"
         path: "{{ channel_config_path }}/{{ channel_name }}-updated_config.bin"
@@ -83,11 +79,10 @@
 
     - name: Apply the channel configuration update
       ibm.blockchain_platform.channel_config:
-        api_endpoint: "{{ api_endpoint }}"
-        api_authtype: "{{ api_authtype }}"
-        api_key: "{{ api_key }}"
-        api_secret: "{{ api_secret | default(omit) }}"
-        api_token_endpoint: "{{ api_token_endpoint | default(omit) }}"
+        api_endpoint: "{{ peer_org.console.api_endpoint }}"
+        api_authtype: "{{ peer_org.console.api_authtype }}"
+        api_key: "{{ peer_org.console.api_key | default(omit) }}"
+        api_secret: "{{ peer_org.console.api_secret | default(omit)}}"
         operation: apply_update
         ordering_service: "{{ os_org.orderer.name }}"
         identity: "{{ peer_org_msp_admin }}"

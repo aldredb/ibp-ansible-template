@@ -1,5 +1,6 @@
 channel_config_path: "{{ playbook_dir }}/config"
 wallet_path: "{{ playbook_dir }}/wallet"
+components_path: "{{ playbook_dir }}/components"
 connection_profile_path: "{{ playbook_dir }}/connection-profiles"
 channel_policies_path: "{{ playbook_dir }}/channel-policies"
 bulk_import_path: "{{ playbook_dir }}/bulk-import"

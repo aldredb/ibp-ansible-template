@@ -1,9 +1,18 @@
 ordering_organization:
   os:
+    console:
+      # Console address
+      api_endpoint: https://<insert-console-address>
+      # basic - for IBP SW OR ibmcloud - for IBP SaaS
+      api_authtype: <insert-basic-or-ibmcloud>
+      # If authtype=ibmcloud, insert API key. If authtype=basic, insert console username
+      api_key: <insert-api-key>
+      # If authtype=ibmcloud, omit this field. If authtype=basic, insert console password
+      api_secret: <insert-api-secret>
     ca:
       name: "OS CA"
       zone: tok02
-      version: "1.4.7-2"
+      version: "1.4.7-3"
       admin_name: "OS CA Admin"
       admin_enrollment_id: "admin"
       admin_enrollment_secret: "adminpw"
@@ -37,7 +46,7 @@ ordering_organization:
         # - tok04
         # - tok05
       nodes: 1
-      version: "2.1.1-2"
+      version: "2.1.1-3"
       resource:
         orderer:
           vcpu: 350m
@@ -49,10 +58,19 @@ ordering_organization:
 
 peer_organizations:
   org1:
+    console:
+      # Console address
+      api_endpoint: https://<insert-console-address>
+      # basic - for IBP SW OR ibmcloud - for IBP SaaS
+      api_authtype: <insert-basic-or-ibmcloud>
+      # If authtype=ibmcloud, insert API key. If authtype=basic, insert console username
+      api_key: <insert-api-key>
+      # If authtype=ibmcloud, omit this field. If authtype=basic, insert console password
+      api_secret: <insert-api-secret>
     ca:
       name: "Org1 CA"
       zone: tok04
-      version: "1.4.7-2"
+      version: "1.4.7-3"
       admin_name: "Org1 CA Admin"
       admin_enrollment_id: "admin"
       admin_enrollment_secret: "adminpw"
@@ -89,7 +107,7 @@ peer_organizations:
       - name: Org1 Peer1
         state_db: couchdb
         zone: "tok05"
-        version: "2.1.1-2"
+        version: "2.1.1-3"
         resource:
           peer:
             vcpu: 400m
@@ -99,18 +117,30 @@ peer_organizations:
             vcpu: 400m
             memory: 400M
             storage: 20Gi
-          chaincodelauncher:
+          chaincodelauncher: # only for HF2.X
             vcpu: 200m
             memory: 400M
+          # dind: # only for HF1.4.X
+          #   vcpu: 500m
+          #   memory: 500M
           proxy:
             vcpu: 100m
             memory: 200M
 
   org2:
+    console:
+      # Console address
+      api_endpoint: https://<insert-console-address>
+      # basic - for IBP SW OR ibmcloud - for IBP SaaS
+      api_authtype: <insert-basic-or-ibmcloud>
+      # If authtype=ibmcloud, insert API key. If authtype=basic, insert console username
+      api_key: <insert-api-key>
+      # If authtype=ibmcloud, omit this field. If authtype=basic, insert console password
+      api_secret: <insert-api-secret>
     ca:
       name: "Org2 CA"
       zone: tok05
-      version: "1.4.7-2"
+      version: "1.4.7-3"
       admin_name: "Org2 CA Admin"
       admin_enrollment_id: "admin"
       admin_enrollment_secret: "adminpw"
@@ -147,7 +177,7 @@ peer_organizations:
       - name: Org2 Peer1
         state_db: couchdb
         zone: "tok04"
-        version: "2.1.1-2"
+        version: "2.1.1-3"
         resource:
           peer:
             vcpu: 400m
@@ -157,9 +187,82 @@ peer_organizations:
             vcpu: 400m
             memory: 400M
             storage: 20Gi
-          chaincodelauncher:
+          chaincodelauncher: # only for HF2.X
             vcpu: 200m
             memory: 400M
+          # dind: # only for HF1.4.X
+          #   vcpu: 500m
+          #   memory: 500M
+          proxy:
+            vcpu: 100m
+            memory: 200M
+
+  org3:
+    console:
+      # Console address
+      api_endpoint: https://<insert-console-address>
+      # basic - for IBP SW OR ibmcloud - for IBP SaaS
+      api_authtype: <insert-basic-or-ibmcloud>
+      # If authtype=ibmcloud, insert API key. If authtype=basic, insert console username
+      api_key: <insert-api-key>
+      # If authtype=ibmcloud, omit this field. If authtype=basic, insert console password
+      api_secret: <insert-api-secret>
+    ca:
+      name: "Org3 CA"
+      zone: tok05
+      version: "1.4.7-3"
+      admin_name: "Org3 CA Admin"
+      admin_enrollment_id: "admin"
+      admin_enrollment_secret: "adminpw"
+      id_list:
+        - name: "Org3 MSP Admin"
+          enrollment_id: "orgadmin"
+          enrollment_secret: "orgadminpw"
+          type: admin
+        - name: "Org3 Peer1"
+          enrollment_id: "peer1"
+          enrollment_secret: "peer1pw"
+          type: peer
+        - name: "Org3 Peer2"
+          enrollment_id: "peer2"
+          enrollment_secret: "peer2pw"
+          type: peer
+        - name: "Org3 User1"
+          enrollment_id: "user1"
+          enrollment_secret: "user1pw"
+          type: client
+        - name: "Org3 Monitoring User"
+          enrollment_id: "monitoring"
+          enrollment_secret: "monitoringpw"
+          type: client
+      resource:
+        vcpu: 100m
+        memory: 200M
+        storage: 20Gi
+    msp:
+      name: "Org3 MSP"
+      id: "org3msp"
+      admin: "Org3 MSP Admin"
+    peers: # name has to match the name(s) in id_list
+      - name: Org3 Peer1
+        state_db: couchdb
+        zone: "tok04"
+        version: "2.1.1-3"
+        resource:
+          peer:
+            vcpu: 400m
+            memory: 400M
+            storage: 20Gi
+          couchdb:
+            vcpu: 400m
+            memory: 400M
+            storage: 20Gi
+          chaincodelauncher: # only for HF2.X
+            vcpu: 200m
+            memory: 400M
+          # dind: # only for HF1.4.X
+          #   vcpu: 500m
+          #   memory: 500M
           proxy:
             vcpu: 100m
             memory: 200M

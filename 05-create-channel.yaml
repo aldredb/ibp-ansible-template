@@ -3,7 +3,6 @@
   hosts: localhost
   vars_files:
     - vars/common.yaml
-    - vars/api.yaml
     - vars/organizations.yaml
     - vars/channels.yaml
   vars:
@@ -20,11 +19,10 @@
   tasks:
     - name: Check to see if the channel already exists
       ibm.blockchain_platform.channel_block:
-        api_endpoint: "{{ api_endpoint }}"
-        api_authtype: "{{ api_authtype }}"
-        api_key: "{{ api_key }}"
-        api_secret: "{{ api_secret | default(omit) }}"
-        api_token_endpoint: "{{ api_token_endpoint | default(omit) }}"
+        api_endpoint: "{{ os_org.console.api_endpoint }}"
+        api_authtype: "{{ os_org.console.api_authtype }}"
+        api_key: "{{ os_org.console.api_key | default(omit) }}"
+        api_secret: "{{ os_org.console.api_secret | default(omit)}}"
         operation: fetch
         ordering_service: "{{ os_org.orderer.name }}"
         identity: "{{ ordering_service_msp_admin }}"
@@ -48,11 +46,10 @@
 
     - name: Create the configuration update for the new channel
       ibm.blockchain_platform.channel_config:
-        api_endpoint: "{{ api_endpoint }}"
-        api_authtype: "{{ api_authtype }}"
-        api_key: "{{ api_key }}"
-        api_secret: "{{ api_secret | default(omit) }}"
-        api_token_endpoint: "{{ api_token_endpoint | default(omit) }}"
+        api_endpoint: "{{ creator_org.console.api_endpoint }}"
+        api_authtype: "{{ creator_org.console.api_authtype }}"
+        api_key: "{{ creator_org.console.api_key | default(omit) }}"
+        api_secret: "{{ creator_org.console.api_secret | default(omit)}}"
         operation: create
         name: "{{ channel_name }}"
         path: "{{ channel_config_path }}/{{ channel_name }}_config_update.bin"
@@ -72,11 +69,10 @@
 
     - name: Apply the channel configuration update for the new channel
       ibm.blockchain_platform.channel_config:
-        api_endpoint: "{{ api_endpoint }}"
-        api_authtype: "{{ api_authtype }}"
-        api_key: "{{ api_key }}"
-        api_secret: "{{ api_secret | default(omit) }}"
-        api_token_endpoint: "{{ api_token_endpoint | default(omit) }}"
+        api_endpoint: "{{ creator_org.console.api_endpoint }}"
+        api_authtype: "{{ creator_org.console.api_authtype }}"
+        api_key: "{{ creator_org.console.api_key | default(omit) }}"
+        api_secret: "{{ creator_org.console.api_secret | default(omit)}}"
         operation: apply_update
         ordering_service: "{{ os_org.orderer.name }}"
         identity: "{{ creator_org_msp_admin }}"

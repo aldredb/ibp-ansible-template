@@ -27,7 +27,7 @@
     product_version: 2.5.0
     
     # The version of IBP operator to use
-    operator_version: 20200618
+    operator_version: 20201001
 
     # Domain name of your Kubernetes or OpenShift cluster. 
     # This domain name is used as the base domain name for all ingress or routes 
@@ -48,11 +48,16 @@
     # timeout errors occur during the installation process
     wait_timeout: 3600
 
+    # The storage class to use for the console.
+    console_storage_class: ibmc-file-gold
+
     # # If your cluster is on multizones, uncomment and list the zones
     # zones:
     #   - <zone_1>
     #   - <zone_2>
     #   - <zone_3>
-  
+
+    # For other options, refer to: https://ibm-blockchain.github.io/ansible-collection/roles/console.html
+    
   roles:
     - ibm.blockchain_platform.console

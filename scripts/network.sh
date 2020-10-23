@@ -91,43 +91,54 @@ up)
 
 	echo "🚀 Setting up your IBP Platform ... "
 	ansible-playbook 00-create-folders.yaml
-	ansible-playbook 01-create-ordering-org.yaml --extra-vars "org_name=os"
-	ansible-playbook 02-create-peer-orgs.yaml --extra-vars "org_name=org1"
-	ansible-playbook 02-create-peer-orgs.yaml --extra-vars "org_name=org2"
+	ansible-playbook 01-create-ordering-org.yaml --extra-vars "org_name=os" -v
+	ansible-playbook 02-create-peer-orgs.yaml --extra-vars "org_name=org1" -v
+	ansible-playbook 02-create-peer-orgs.yaml --extra-vars "org_name=org2" -v
+	ansible-playbook 02-create-peer-orgs.yaml --extra-vars "org_name=org3" -v
+	ansible-playbook 03-import-components.yaml -v
 
 	if "$OPT_BEFORE_CHANNEL"; then
 		success_exit
 	fi
 
-	ansible-playbook 03-add-org-to-consortium.yaml --extra-vars "os_org_name=os"
-	./scripts/generate_channel_policies.sh samplechannel1
-	ansible-playbook 04-create-channel.yaml --extra-vars "channel_name=samplechannel1 os_org_name=os creator_org_name=org1" -v
-	./scripts/generate_channel_policies.sh samplechannel2
-	ansible-playbook 04-create-channel.yaml --extra-vars "channel_name=samplechannel2 os_org_name=os creator_org_name=org1" -v
+	ansible-playbook 04-add-orgs-to-consortium.yaml --extra-vars "os_org_name=os" -v
+	./scripts/generate_channel_policies.sh common-channel
+	ansible-playbook 05-create-channel.yaml --extra-vars "channel_name=common-channel os_org_name=os creator_org_name=org1" -v
+
+	./scripts/generate_channel_policies.sh org1-org2-channel
+	ansible-playbook 05-create-channel.yaml --extra-vars "channel_name=org1-org2-channel os_org_name=os creator_org_name=org1" -v
 
 	if "$OPT_BEFORE_JOIN"; then
 		success_exit
 	fi
 
-	ansible-playbook 05-join-peers-to-channel.yaml --extra-vars "channel_name=samplechannel1 os_org_name=os peer_org_name=org1" -v
-	ansible-playbook 05-join-peers-to-channel.yaml --extra-vars "channel_name=samplechannel1 os_org_name=os peer_org_name=org2" -v
-	ansible-playbook 05-join-peers-to-channel.yaml --extra-vars "channel_name=samplechannel2 os_org_name=os peer_org_name=org1" -v
-	ansible-playbook 06-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=samplechannel1 os_org_name=os peer_org_name=org1" -v
-	ansible-playbook 06-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=samplechannel1 os_org_name=os peer_org_name=org2" -v
+	ansible-playbook 06-join-peers-to-channel.yaml --extra-vars "channel_name=common-channel os_org_name=os peer_org_name=org1" -v
+	ansible-playbook 06-join-peers-to-channel.yaml --extra-vars "channel_name=common-channel os_org_name=os peer_org_name=org2" -v
+	ansible-playbook 06-join-peers-to-channel.yaml --extra-vars "channel_name=common-channel os_org_name=os peer_org_name=org3" -v
+	ansible-playbook 07-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=common-channel os_org_name=os peer_org_name=org1" -v
+	ansible-playbook 07-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=common-channel os_org_name=os peer_org_name=org2" -v
+	ansible-playbook 07-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=common-channel os_org_name=os peer_org_name=org3" -v
+
+	ansible-playbook 06-join-peers-to-channel.yaml --extra-vars "channel_name=org1-org2-channel os_org_name=os peer_org_name=org1" -v
+	ansible-playbook 06-join-peers-to-channel.yaml --extra-vars "channel_name=org1-org2-channel os_org_name=os peer_org_name=org2" -v
+	ansible-playbook 07-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=org1-org2-channel os_org_name=os peer_org_name=org1" -v
+	ansible-playbook 07-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=org1-org2-channel os_org_name=os peer_org_name=org2" -v
 
 	if "$OPT_BEFORE_CHAINCODE"; then
 		success_exit
 	fi
-	ansible-playbook 07-install-chaincode.yaml --extra-vars "peer_org_name=org1 cc_path=chaincodes/marbles@v2.cds"
-	ansible-playbook 07-install-chaincode.yaml --extra-vars "peer_org_name=org2 cc_path=chaincodes/marbles@v2.cds"
-	ansible-playbook 08-instantiate-chaincode.yaml --extra-vars "peer_org_name=org1 channel_name=samplechannel1 cc_name=marbles"
+	ansible-playbook 08-install-chaincode.yaml --extra-vars "peer_org_name=org1 cc_path=chaincodes/marbles@v2.cds" -v
+	ansible-playbook 08-install-chaincode.yaml --extra-vars "peer_org_name=org2 cc_path=chaincodes/marbles@v2.cds" -v
+	ansible-playbook 08-install-chaincode.yaml --extra-vars "peer_org_name=org3 cc_path=chaincodes/marbles@v2.cds" -v
+
+	ansible-playbook 09-instantiate-chaincode.yaml --extra-vars "peer_org_name=org1 channel_name=common-channel cc_name=marbles"
 	success_exit
 	;;
 down)
 	echo "🧹 Tearing down ... "
-	ansible-playbook 91-delete-connection-profile.yaml --extra-vars "peer_org_name=org1"
 	ansible-playbook 98-delete-peer-orgs.yaml --extra-vars "org_name=org1"
 	ansible-playbook 98-delete-peer-orgs.yaml --extra-vars "org_name=org2"
+	ansible-playbook 98-delete-peer-orgs.yaml --extra-vars "org_name=org3"
 	ansible-playbook 99-delete-ordering-org.yaml --extra-vars "org_name=os"
 	ansible-playbook 100-delete-folders.yaml
 	success_exit

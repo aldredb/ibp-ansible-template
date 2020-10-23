@@ -3,7 +3,6 @@
   hosts: localhost
   vars_files:
     - vars/common.yaml
-    - vars/api.yaml
     - vars/organizations.yaml
   vars:
     # org_name: os
@@ -14,10 +13,10 @@
     - name: Create certificate authority
       ibm.blockchain_platform.certificate_authority:
         state: "{{ state }}"
-        api_endpoint: "{{ api_endpoint }}"
-        api_authtype: "{{ api_authtype }}"
-        api_key: "{{ api_key | default(omit) }}"
-        api_secret: "{{ api_secret | default(omit)}}"
+        api_endpoint: "{{ org.console.api_endpoint }}"
+        api_authtype: "{{ org.console.api_authtype }}"
+        api_key: "{{ org.console.api_key | default(omit) }}"
+        api_secret: "{{ org.console.api_secret | default(omit)}}"
         name: "{{ org.ca.name }}"
         zone: "{{ org.ca.zone | default(omit) }}"
         version: "{{ org.ca.version | default('1.4.7-1')}}"
@@ -51,10 +50,10 @@
     - name: Enroll CA admin
       ibm.blockchain_platform.enrolled_identity:
         state: "{{ state }}"
-        api_endpoint: "{{ api_endpoint }}"
-        api_authtype: "{{ api_authtype }}"
-        api_key: "{{ api_key | default(omit) }}"
-        api_secret: "{{ api_secret | default(omit)}}"
+        api_endpoint: "{{ org.console.api_endpoint }}"
+        api_authtype: "{{ org.console.api_authtype }}"
+        api_key: "{{ org.console.api_key | default(omit) }}"
+        api_secret: "{{ org.console.api_secret | default(omit)}}"
         certificate_authority: "{{ org.ca.name }}"
         name: "{{ org.ca.admin_name }}"
         enrollment_id: "{{ org.ca.admin_enrollment_id }}"
@@ -64,10 +63,10 @@
     - name: Register org admin, orderer and monitoring user
       ibm.blockchain_platform.registered_identity:
         state: "{{ state }}"
-        api_endpoint: "{{ api_endpoint }}"
-        api_authtype: "{{ api_authtype }}"
-        api_key: "{{ api_key | default(omit) }}"
-        api_secret: "{{ api_secret | default(omit)}}"
+        api_endpoint: "{{ org.console.api_endpoint }}"
+        api_authtype: "{{ org.console.api_authtype }}"
+        api_key: "{{ org.console.api_key | default(omit) }}"
+        api_secret: "{{ org.console.api_secret | default(omit)}}"
         certificate_authority: "{{ org.ca.name }}"
         registrar: "{{ wallet_path }}/{{ org.ca.admin_name }}.json"
         enrollment_id: "{{ item.enrollment_id }}"
@@ -78,10 +77,10 @@
     - name: Enroll the org admin
       ibm.blockchain_platform.enrolled_identity:
         state: "{{ state }}"
-        api_endpoint: "{{ api_endpoint }}"
-        api_authtype: "{{ api_authtype }}"
-        api_key: "{{ api_key | default(omit) }}"
-        api_secret: "{{ api_secret | default(omit)}}"
+        api_endpoint: "{{ org.console.api_endpoint }}"
+        api_authtype: "{{ org.console.api_authtype }}"
+        api_key: "{{ org.console.api_key | default(omit) }}"
+        api_secret: "{{ org.console.api_secret | default(omit)}}"
         certificate_authority: "{{ org.ca.name }}"
         name: "{{ org.msp.admin }}"
         enrollment_id: "{{ msp_admin_info[0].enrollment_id }}"
@@ -92,10 +91,10 @@
     - name: Create organization
       ibm.blockchain_platform.organization:
         state: "{{ state }}"
-        api_endpoint: "{{ api_endpoint }}"
-        api_authtype: "{{ api_authtype }}"
-        api_key: "{{ api_key | default(omit) }}"
-        api_secret: "{{ api_secret | default(omit)}}"
+        api_endpoint: "{{ org.console.api_endpoint }}"
+        api_authtype: "{{ org.console.api_authtype }}"
+        api_key: "{{ org.console.api_key | default(omit) }}"
+        api_secret: "{{ org.console.api_secret | default(omit)}}"
         name: "{{ org.msp.name }}"
         msp_id: "{{ org.msp.id }}"
         certificate_authority: "{{ org.ca.name }}"
@@ -106,10 +105,10 @@
     - name: Create ordering service
       ibm.blockchain_platform.ordering_service:
         state: "{{ state }}"
-        api_endpoint: "{{ api_endpoint }}"
-        api_authtype: "{{ api_authtype }}"
-        api_key: "{{ api_key }}"
-        api_secret: "{{ api_secret | default(omit) }}"
+        api_endpoint: "{{ org.console.api_endpoint }}"
+        api_authtype: "{{ org.console.api_authtype }}"
+        api_key: "{{ org.console.api_key | default(omit) }}"
+        api_secret: "{{ org.console.api_secret | default(omit) }}"
         name: "{{ org.orderer.name }}"
         msp_id: "{{ org.msp.id }}"
         nodes: "{{ org.orderer.nodes }}"
@@ -137,3 +136,31 @@
       until: result.msg is not defined or 'Failed' is not in result.msg
       retries: 3
       delay: 5
+
+    - name: Retrieve the ordering service
+      ibm.blockchain_platform.ordering_service_info:
+        api_endpoint: "{{ org.console.api_endpoint }}"
+        api_authtype: "{{ org.console.api_authtype }}"
+        api_key: "{{ org.console.api_key | default(omit) }}"
+        api_secret: "{{ org.console.api_secret | default(omit) }}"
+        name: "{{ org.orderer.name }}"
+      register: result
+
+    - name: Store the ordering service in a file
+      copy:
+        content: "{{ result.ordering_service | to_nice_json }}"
+        dest: "{{ components_path }}/{{ org.orderer.name }}_Orderer.json"
+
+    - name: Retrieve MSP
+      ibm.blockchain_platform.organization_info:
+        api_endpoint: "{{ org.console.api_endpoint }}"
+        api_authtype: "{{ org.console.api_authtype }}"
+        api_key: "{{ org.console.api_key | default(omit) }}"
+        api_secret: "{{ org.console.api_secret | default(omit)}}"
+        name: "{{ org.msp.name }}"
+      register: result
+
+    - name: Store MSP into a file
+      copy:
+        content: "{{ result.organization | to_nice_json }}"
+        dest: "{{ components_path }}/{{ org.msp.name }}_MSP.json"

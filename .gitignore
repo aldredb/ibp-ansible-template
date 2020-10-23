@@ -1,12 +1,13 @@
 .DS_Store
 .metals
 .vscode
-install-crd.yaml
-install-ibp.yaml
+install-crd*.yaml
+install-ibp*.yaml
 # ignore all JSON wallet identity files
 wallet/
 config/
 connection-profiles/
+components/
 channel-policies/
 bulk-import/
 bulk-import.zip
