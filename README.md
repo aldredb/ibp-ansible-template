@@ -177,9 +177,6 @@ Import `bulk-import.zip` to IBP Console
 
 # if you only want to set up Ordering Org, Peer Org and channels, without joining any peers
 ./scripts/network.sh -b before-join up
-
-# if you only want to set up Ordering Org, Peer Org, channels and have peers join the channel, without installing any chaincode
-./scripts/network.sh -b before-chaincode up
 ```
 
 ## Cleaning up
