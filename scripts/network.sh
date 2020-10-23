@@ -28,7 +28,7 @@ function cmd_exists() {
 }
 
 function check_dep() {
-	for tool in ansible-galaxy ansible-playbook; do
+	for tool in ansible-galaxy ansible-playbook yq; do
 		if ! cmd_exists $tool; then
 			echo "⚠ Please install: $tool !"
 			exit 1
@@ -84,62 +84,110 @@ printf "%s" "🔍 Checking required tools ... "
 check_dep
 echo "done"
 
+printf "%s\n" "🔍 Listing organizations, channels and consortium members ... "
+PEER_ORG_LIST=$(yq r vars/organizations.yaml "peer_organizations" | yq r - --printMode p "*")
+ORDERER_ORG_LIST=$(yq r vars/organizations.yaml "ordering_organization" | yq r - --printMode p "*")
+ORDERER_ORG_ARRAY=($(echo $ORDERER_ORG_LIST | tr "\n" "\n"))
+CHANNEL_LIST=$(yq r vars/channels.yaml "channels" | yq r - --printMode p "*")
+CONSORTIUM_MEMBERS_LENGTH=$(yq r vars/channels.yaml --length "consortium_members")
+
+if [ $CONSORTIUM_MEMBERS_LENGTH -gt 0 ]; then
+	# Assume the first organization
+  FIRST_CONSORTIUM_MEMBER=$(yq r vars/channels.yaml "consortium_members[0]")
+else
+  echo "There are no consortium members"
+  exit 1
+fi
+
+if [ ${#ORDERER_ORG_ARRAY} -gt 0 ]; then
+	# There should only be 1 ordering organization
+  ORDERER_ORG=${ORDERER_ORG_ARRAY[0]}
+else
+  echo "There are no ordering organizations"
+  exit 1
+fi
+
+echo "" 
+echo "Peer Organizations:"
+for i in $PEER_ORG_LIST; do
+  echo $i
+done
+
+echo "" 
+echo "Ordering Organizations:"
+for i in $ORDERER_ORG_LIST; do
+  echo $i
+done
+
+echo ""
+echo "Channels:"
+for i in $CHANNEL_LIST; do
+  echo $i
+done
+
+echo ""
+echo "Consortium's first member: $FIRST_CONSORTIUM_MEMBER"
+echo "Orderer Organization: $ORDERER_ORG"
+echo "done"
+
 case "$ACTION" in
 up)
-	# update to ansible-collection to the latest
-	# ansible-galaxy collection install ibm.blockchain_platform -f
 
 	echo "🚀 Setting up your IBP Platform ... "
 	ansible-playbook 00-create-folders.yaml
-	ansible-playbook 01-create-ordering-org.yaml --extra-vars "org_name=os" -v
-	ansible-playbook 02-create-peer-orgs.yaml --extra-vars "org_name=org1" -v
-	ansible-playbook 02-create-peer-orgs.yaml --extra-vars "org_name=org2" -v
-	ansible-playbook 02-create-peer-orgs.yaml --extra-vars "org_name=org3" -v
+
+	for org in $ORDERER_ORG_LIST; do
+  	ansible-playbook 01-create-ordering-org.yaml --extra-vars "org_name=$org" -v
+	done
+
+	for org in $PEER_ORG_LIST; do
+  	ansible-playbook 02-create-peer-orgs.yaml --extra-vars "org_name=$org" -v
+	done
+
 	ansible-playbook 03-import-components.yaml -v
 
 	if "$OPT_BEFORE_CHANNEL"; then
 		success_exit
 	fi
 
-	ansible-playbook 04-add-orgs-to-consortium.yaml --extra-vars "os_org_name=os" -v
-	./scripts/generate_channel_policies.sh common-channel
-	ansible-playbook 05-create-channel.yaml --extra-vars "channel_name=common-channel os_org_name=os creator_org_name=org1" -v
+	ansible-playbook 04-add-orgs-to-consortium.yaml --extra-vars "os_org_name=$ORDERER_ORG" -v
 
-	./scripts/generate_channel_policies.sh org1-org2-channel
-	ansible-playbook 05-create-channel.yaml --extra-vars "channel_name=org1-org2-channel os_org_name=os creator_org_name=org1" -v
+	for ch in $CHANNEL_LIST; do
+  	./scripts/generate_channel_policies.sh $ch
+		ansible-playbook 05-create-channel.yaml \
+			--extra-vars "channel_name=$ch os_org_name=$ORDERER_ORG creator_org_name=$FIRST_CONSORTIUM_MEMBER" -v
+	done
 
 	if "$OPT_BEFORE_JOIN"; then
 		success_exit
 	fi
 
-	ansible-playbook 06-join-peers-to-channel.yaml --extra-vars "channel_name=common-channel os_org_name=os peer_org_name=org1" -v
-	ansible-playbook 06-join-peers-to-channel.yaml --extra-vars "channel_name=common-channel os_org_name=os peer_org_name=org2" -v
-	ansible-playbook 06-join-peers-to-channel.yaml --extra-vars "channel_name=common-channel os_org_name=os peer_org_name=org3" -v
-	ansible-playbook 07-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=common-channel os_org_name=os peer_org_name=org1" -v
-	ansible-playbook 07-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=common-channel os_org_name=os peer_org_name=org2" -v
-	ansible-playbook 07-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=common-channel os_org_name=os peer_org_name=org3" -v
+	for ch in $CHANNEL_LIST; do
+    # Retrieve channel members for the channel
+    CHANNEL_MEMBERS=$(yq r vars/channels.yaml "channels[$ch].members" | yq r - --printMode p "*")
+  	for channel_member in $CHANNEL_MEMBERS; do
+      ansible-playbook 06-join-peers-to-channel.yaml \
+				--extra-vars "channel_name=$ch os_org_name=$ORDERER_ORG peer_org_name=$channel_member" -v
 
-	ansible-playbook 06-join-peers-to-channel.yaml --extra-vars "channel_name=org1-org2-channel os_org_name=os peer_org_name=org1" -v
-	ansible-playbook 06-join-peers-to-channel.yaml --extra-vars "channel_name=org1-org2-channel os_org_name=os peer_org_name=org2" -v
-	ansible-playbook 07-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=org1-org2-channel os_org_name=os peer_org_name=org1" -v
-	ansible-playbook 07-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=org1-org2-channel os_org_name=os peer_org_name=org2" -v
+			ansible-playbook 07-add-anchor-peer-to-channel.yaml \
+				--extra-vars "channel_name=$ch os_org_name=$ORDERER_ORG peer_org_name=$channel_member" -v
+    done
+	done
 
-	if "$OPT_BEFORE_CHAINCODE"; then
-		success_exit
-	fi
-	ansible-playbook 08-install-chaincode.yaml --extra-vars "peer_org_name=org1 cc_path=chaincodes/marbles@v2.cds" -v
-	ansible-playbook 08-install-chaincode.yaml --extra-vars "peer_org_name=org2 cc_path=chaincodes/marbles@v2.cds" -v
-	ansible-playbook 08-install-chaincode.yaml --extra-vars "peer_org_name=org3 cc_path=chaincodes/marbles@v2.cds" -v
-
-	ansible-playbook 09-instantiate-chaincode.yaml --extra-vars "peer_org_name=org1 channel_name=common-channel cc_name=marbles"
 	success_exit
 	;;
 down)
 	echo "🧹 Tearing down ... "
-	ansible-playbook 98-delete-peer-orgs.yaml --extra-vars "org_name=org1"
-	ansible-playbook 98-delete-peer-orgs.yaml --extra-vars "org_name=org2"
-	ansible-playbook 98-delete-peer-orgs.yaml --extra-vars "org_name=org3"
-	ansible-playbook 99-delete-ordering-org.yaml --extra-vars "org_name=os"
+	ansible-playbook 97-remove-imported-components.yaml
+
+	for org in $PEER_ORG_LIST; do
+  	ansible-playbook 98-delete-peer-orgs.yaml --extra-vars "org_name=$org" -v
+	done
+
+	for org in $ORDERER_ORG_LIST; do
+  	ansible-playbook 99-delete-ordering-org.yaml --extra-vars "org_name=$org" -v
+	done
+
 	ansible-playbook 100-delete-folders.yaml
 	success_exit
 	;;

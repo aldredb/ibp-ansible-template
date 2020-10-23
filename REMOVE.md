@@ -5,6 +5,7 @@ Here are some instructions to tear down some of the IBP components.
 ## Delete organizations (and its components)
 
 ```sh
+ansible-playbook 97-remove-imported-components.yaml
 ansible-playbook 98-delete-peer-orgs.yaml --extra-vars "org_name=org1"
 ansible-playbook 98-delete-peer-orgs.yaml --extra-vars "org_name=org2"
 ansible-playbook 98-delete-peer-orgs.yaml --extra-vars "org_name=org3"
