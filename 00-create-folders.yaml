@@ -12,3 +12,4 @@
         - "{{ channel_config_path }}"
         - "{{ connection_profile_path }}"
         - "{{ wallet_path }}"
+        - "{{ components_path }}"

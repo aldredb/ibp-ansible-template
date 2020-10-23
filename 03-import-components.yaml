@@ -1,0 +1,75 @@
+---
+- name: Import Components
+  hosts: localhost
+  vars_files:
+    - vars/common.yaml
+    - vars/organizations.yaml
+  vars:
+  tasks:
+    - name: Peer organizations import MSPs of other peer organizations
+      vars:
+        - org: "{{ peer_organizations[item[0]] }}"
+        - org_to_be_imported: "{{ peer_organizations[item[1]] }}"
+      ibm.blockchain_platform.external_organization:
+        state: "{{ state }}"
+        api_endpoint: "{{ org.console.api_endpoint }}"
+        api_authtype: "{{ org.console.api_authtype }}"
+        api_key: "{{ org.console.api_key | default(omit) }}"
+        api_secret: "{{ org.console.api_secret | default(omit)}}"
+        organization: "{{ lookup('file', '{{ components_path }}/{{ org_to_be_imported.msp.name }}_MSP.json') }}"
+      # debug:
+      #   msg: "Item0: {{ org.msp.id }} --- Item1: {{ org_to_be_imported.msp.id }}"
+      with_nested:
+        - "{{ peer_organizations.keys() | list }}" #item[0]
+        - "{{ peer_organizations.keys() | list }}" #item[1]
+
+    - name: Peer organizations import MSPs of ordering organization(s)
+      vars:
+        - org: "{{ peer_organizations[item[0]] }}"
+        - org_to_be_imported: "{{ ordering_organization[item[1]] }}"
+      ibm.blockchain_platform.external_organization:
+        state: "{{ state }}"
+        api_endpoint: "{{ org.console.api_endpoint }}"
+        api_authtype: "{{ org.console.api_authtype }}"
+        api_key: "{{ org.console.api_key | default(omit) }}"
+        api_secret: "{{ org.console.api_secret | default(omit)}}"
+        organization: "{{ lookup('file', '{{ components_path }}/{{ org_to_be_imported.msp.name }}_MSP.json') }}"
+      with_nested:
+        - "{{ peer_organizations.keys() | list }}" #item[0]
+        - "{{ ordering_organization.keys() | list }}" #item[1]
+
+    - name: Ordering organization(s) import MSPs of other peer organizations
+      vars:
+        - org: "{{ ordering_organization[item[0]] }}"
+        - org_to_be_imported: "{{ peer_organizations[item[1]] }}"
+      ibm.blockchain_platform.external_organization:
+        state: "{{ state }}"
+        api_endpoint: "{{ org.console.api_endpoint }}"
+        api_authtype: "{{ org.console.api_authtype }}"
+        api_key: "{{ org.console.api_key | default(omit) }}"
+        api_secret: "{{ org.console.api_secret | default(omit)}}"
+        organization: "{{ lookup('file', '{{ components_path }}/{{ org_to_be_imported.msp.name }}_MSP.json') }}"
+      with_nested:
+        - "{{ ordering_organization.keys() | list }}" #item[0]
+        - "{{ peer_organizations.keys() | list }}" #item[1]
+
+    - name: Peer organizations import orderers of ordering organization(s)
+      vars:
+        - org: "{{ peer_organizations[item[0]] }}"
+        - org_to_be_imported: "{{ ordering_organization[item[1]] }}"
+      ibm.blockchain_platform.external_ordering_service:
+        state: "{{ state }}"
+        api_endpoint: "{{ org.console.api_endpoint }}"
+        api_authtype: "{{ org.console.api_authtype }}"
+        api_key: "{{ org.console.api_key | default(omit) }}"
+        api_secret: "{{ org.console.api_secret | default(omit)}}"
+        ordering_service: "{{ lookup('file', '{{ components_path }}/{{ org_to_be_imported.orderer.name }}_Orderer.json') }}"
+      register: result
+      failed_when:
+        - 'result.failed == true'
+        # If the ordering organization is hosted in the same IBP instance as one of the organizations, 
+        # IBP will return error upon importing. Ignore the error if it consists of the error string
+        - '"exists and appears to be managed by this console" not in result.msg'
+      with_nested:
+        - "{{ peer_organizations.keys() | list }}" #item[0]
+        - "{{ ordering_organization.keys() | list }}" #item[1]

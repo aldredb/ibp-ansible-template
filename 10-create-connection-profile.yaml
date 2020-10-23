@@ -6,7 +6,6 @@
   hosts: localhost
   vars_files:
     - vars/common.yaml
-    - vars/api.yaml
     - vars/organizations.yaml
   vars:
     # peer_org_name: org1
@@ -15,11 +14,10 @@
     - name: Create a connection profile
       ibm.blockchain_platform.connection_profile:
         state: present
-        api_endpoint: "{{ api_endpoint }}"
-        api_authtype: "{{ api_authtype }}"
-        api_key: "{{ api_key }}"
-        api_secret: "{{ api_secret | default(omit) }}"
-        api_token_endpoint: "{{ api_token_endpoint | default(omit) }}"
+        api_endpoint: "{{ peer_org.console.api_endpoint }}"
+        api_authtype: "{{ peer_org.console.api_authtype }}"
+        api_key: "{{ peer_org.console.api_key }}"
+        api_secret: "{{ peer_org.console.api_secret | default(omit) }}"
         name: "{{  peer_org.msp.name }} Gateway"
         path: "{{ connection_profile_path }}/{{ peer_org.msp.name }} Gateway.json"
         organization: "{{ peer_org.msp.name }}"

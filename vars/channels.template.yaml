@@ -1,13 +1,49 @@
 consortium_members:
   - org1
   - org2
+  - org3
 
 channels:
-  samplechannel1:
+  common-channel:
     members:
       org1: # has to match the key in peer_organizations
         peers:
           - Org1 Peer1 # has to match the name of the peers
+        anchor_peers:
+          - Org1 Peer1
+      org2:
+        peers:
+          - Org2 Peer1
+        anchor_peers:
+          - Org2 Peer1
+      org3:
+        peers:
+          - Org3 Peer1
+        anchor_peers:
+          - Org3 Peer1
+    # By default, all members are readers
+    writers:
+      - org1
+      - org2
+      - org3
+    operators:
+      - org1
+      - org2
+      - org3
+    config_update_policy: 2 # out of total number of operators
+    chaincodes:
+      marbles:
+        version: v2
+        constructor:
+          function: "init"
+          args:
+            - "test"
+          endorsement_policy: OR('org1msp.peer','org2msp.peer')
+  org1-org2-channel:
+    members:
+      org1:
+        peers:
+          - Org1 Peer1
         anchor_peers:
           - Org1 Peer1
       org2:
@@ -22,25 +58,4 @@ channels:
     operators:
       - org1
       - org2
-    config_update_policy: 2 # out of total number of operators
-    chaincodes:
-      marbles:
-        version: v2
-        constructor:
-          function: "init"
-          args:
-            - "test"
-          endorsement_policy: OR('org1msp.peer','org2msp.peer')
-  samplechannel2:
-    members:
-      org1:
-        peers:
-          - Org1 Peer1
-        anchor_peers:
-          - Org1 Peer1
-    # By default, all members are readers
-    writers:
-      - org1
-    operators:
-      - org1
     config_update_policy: 1

@@ -23,6 +23,12 @@
     # Email address of your IBMid account that you use to access the My IBM dashboard
     image_registry_email: <image_registry_email>
 
+    # The version of IBP to use
+    product_version: 2.5.0
+    
+    # The version of IBP operator to use
+    webhook_version: 20201001
+
     # Set to 3600 seconds (1 hour), which should be sufficient for most environments. 
     # You only need to change the value for this variable if you find that 
     # timeout errors occur during the installation process

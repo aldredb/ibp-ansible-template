@@ -13,4 +13,5 @@
         - "{{ connection_profile_path }}"
         - "{{ wallet_path }}"
         - "{{ channel_policies_path }}"
-        - "{{ bulk_import_path }}"
+        - "{{ playbook_dir }}/bulk-import.zip"
+        - "{{ components_path }}"
