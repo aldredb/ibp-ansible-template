@@ -21,6 +21,10 @@ channels:
           - Org3 Peer1
         anchor_peers:
           - Org3 Peer1
+    capabilities:
+      application: V1_4_2
+      channel: V1_4_3
+      orderer: V1_4_2
     # By default, all members are readers
     writers:
       - org1
@@ -39,6 +43,7 @@ channels:
           args:
             - "test"
           endorsement_policy: OR('org1msp.peer','org2msp.peer')
+          
   org1-org2-channel:
     members:
       org1:
@@ -51,6 +56,10 @@ channels:
           - Org2 Peer1
         anchor_peers:
           - Org2 Peer1
+    capabilities:
+      application: V1_4_2
+      channel: V1_4_3
+      orderer: V1_4_2
     # By default, all members are readers
     writers:
       - org1
@@ -58,4 +67,29 @@ channels:
     operators:
       - org1
       - org2
+    config_update_policy: 1
+
+  org2-org3-channel:
+    members:
+      org2:
+        peers:
+          - Org2 Peer1
+        anchor_peers:
+          - Org2 Peer1
+      org3:
+        peers:
+          - Org3 Peer1
+        anchor_peers:
+          - Org3 Peer1
+    capabilities:
+      application: V1_4_2
+      channel: V1_4_3
+      orderer: V1_4_2
+    # By default, all members are readers
+    writers:
+      - org2
+      - org3
+    operators:
+      - org2
+      - org3
     config_update_policy: 1

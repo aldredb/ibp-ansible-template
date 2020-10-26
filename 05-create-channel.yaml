@@ -54,16 +54,31 @@
         name: "{{ channel_name }}"
         path: "{{ channel_config_path }}/{{ channel_name }}_config_update.bin"
         organizations: "{{ channel_members }}"
+        capabilities:
+          application: "{{ vars['channels'][channel_name]['capabilities']['application'] | default('V1_4_2') }}"
+          # channel: "{{ vars['channels'][channel_name]['capabilities']['channel'] | default('V1_4_3') }}" #doesn't work for now
+          orderer: "{{ vars['channels'][channel_name]['capabilities']['orderer'] | default('V1_4_2') }}"
         policies:
           Admins: "{{ lookup('file', '{{ channel_policies_dir }}/admins-policy.yaml') | from_yaml }}"
           Readers: "{{ lookup('file', '{{ channel_policies_dir }}/readers-policy.yaml') | from_yaml }}"
           Writers: "{{ lookup('file', '{{ channel_policies_dir }}/writers-policy.yaml') | from_yaml }}"
 
-    - name: Sign the channel configuration update for the new channel
+    - name: Peer organizations signs the channel configuration update for the new channel
+      vars:
+        - org: "{{ peer_organizations[item] }}"
       ibm.blockchain_platform.channel_config:
         operation: sign_update
-        identity: "{{ creator_org_msp_admin }}"
-        msp_id: "{{ creator_org.msp.id }}"
+        identity: "{{ wallet_path }}/{{ org.msp.admin }}.json"
+        msp_id: "{{ org.msp.id }}"
+        name: "{{ channel_name }}"
+        path: "{{ channel_config_path }}/{{ channel_name }}_config_update.bin"
+      loop: "{{ channels[channel_name].members.keys() | list }}"
+
+    - name: Ordering organization signs the channel configuration update for the new channel
+      ibm.blockchain_platform.channel_config:
+        operation: sign_update
+        identity: "{{ ordering_service_msp_admin }}"
+        msp_id: "{{ os_org.msp.id }}"
         name: "{{ channel_name }}"
         path: "{{ channel_config_path }}/{{ channel_name }}_config_update.bin"
 
