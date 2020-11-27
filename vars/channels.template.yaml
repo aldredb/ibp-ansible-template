@@ -22,15 +22,21 @@ channels:
         anchor_peers:
           - Org3 Peer1
     capabilities:
-      application: V1_4_2
-      channel: V1_4_3
-      orderer: V1_4_2
-    # By default, all members are readers
+      application: V2_0
+    # By default, all members are readers, so no need to specify readers policy
     writers:
       - org1
       - org2
       - org3
     operators:
+      - org1
+      - org2
+      - org3
+    default_chaincode_endorsers:
+      - org1
+      - org2
+      - org3
+    chaincode_lifecycle:
       - org1
       - org2
       - org3
@@ -57,14 +63,18 @@ channels:
         anchor_peers:
           - Org2 Peer1
     capabilities:
-      application: V1_4_2
-      channel: V1_4_3
-      orderer: V1_4_2
-    # By default, all members are readers
+      application: V2_0
+    # By default, all members are readers, so no need to specify readers policy
     writers:
       - org1
       - org2
     operators:
+      - org1
+      - org2
+    default_chaincode_endorsers:
+      - org1
+      - org2
+    chaincode_lifecycle:
       - org1
       - org2
     config_update_policy: 1
@@ -82,14 +92,47 @@ channels:
         anchor_peers:
           - Org3 Peer1
     capabilities:
-      application: V1_4_2
-      channel: V1_4_3
-      orderer: V1_4_2
-    # By default, all members are readers
+      application: V2_0
+    # By default, all members are readers, so no need to specify readers policy
     writers:
       - org2
       - org3
     operators:
       - org2
+      - org3
+    default_chaincode_endorsers:
+      - org2
+      - org3
+    chaincode_lifecycle:
+      - org2
+      - org3
+    config_update_policy: 1
+
+  org1-org3-channel:
+    members:
+      org1:
+        peers:
+          - Org1 Peer1
+        anchor_peers:
+          - Org1 Peer1
+      org3:
+        peers:
+          - Org3 Peer1
+        anchor_peers:
+          - Org3 Peer1
+    capabilities:
+      application: V2_0
+    # By default, all members are readers, so no need to specify readers policy
+    writers:
+      - org1
+      - org3
+    operators:
+      - org1
+      - org3
+    default_chaincode_endorsers:
+      - org1
+      - org3
+    chaincode_lifecycle:
+      - org1
       - org3
     config_update_policy: 1

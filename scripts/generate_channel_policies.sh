@@ -45,6 +45,8 @@ fi
 MEMBER_ORGS=$(yq r "$CONFIG_FILE" --printMode p "channels.$CHANNEL_NAME.members.*" | awk -F "." '{print $4}')
 NUM_WRITER=$(yq r "$CONFIG_FILE" --length "channels.$CHANNEL_NAME.writers")
 NUM_ADMIN=$(yq r "$CONFIG_FILE" --length "channels.$CHANNEL_NAME.operators")
+NUM_DEFAULT_CC_ENDORSER=$(yq r "$CONFIG_FILE" --length "channels.$CHANNEL_NAME.default_chaincode_endorsers")
+NUM_CC_LIFECYCLE=$(yq r "$CONFIG_FILE" --length "channels.$CHANNEL_NAME.chaincode_lifecycle")
 NUM_OUT_OF_ADMIN=$(yq r "$CONFIG_FILE" "channels.$CHANNEL_NAME.config_update_policy")
 
 echo "Generating readers-policy.yaml for $CHANNEL_NAME"
@@ -113,6 +115,50 @@ for i in $(seq 0 "$(expr "$NUM_ADMIN" - 1)"); do
 	yq w -i "$admin_policy_file" "value.identities[$i].principal_classification" "ROLE"
 	yq w -i "$admin_policy_file" "value.identities[$i].principal.msp_identifier" "$msp_id"
 	yq w -i "$admin_policy_file" "value.identities[$i].principal.role" "ADMIN"
+done
+
+echo "Generating default-cc-endorsers.yaml for $CHANNEL_NAME"
+default_cc_endorsers_file="$DEST_DIR/default-cc-endorsers.yaml"
+cat <<EOT >"$default_cc_endorsers_file"
+type: 1
+value:
+  rule:
+    n_out_of:
+      n: 1
+      rules:
+  identities:
+EOT
+for i in $(seq 0 "$(expr "$NUM_DEFAULT_CC_ENDORSER" - 1)"); do
+	org_name=$(yq r "$CONFIG_FILE" "channels.$CHANNEL_NAME".default_chaincode_endorsers["$i"])
+	msp_id=$(yq r "$ORG_CONFIG_FILE" "peer_organizations.$org_name.msp.id")
+
+	# update the policy file
+	yq w -i "$default_cc_endorsers_file" "value.rule.n_out_of.rules[$i].signed_by" "$i"
+	yq w -i "$default_cc_endorsers_file" "value.identities[$i].principal_classification" "ROLE"
+	yq w -i "$default_cc_endorsers_file" "value.identities[$i].principal.msp_identifier" "$msp_id"
+	yq w -i "$default_cc_endorsers_file" "value.identities[$i].principal.role" "MEMBER"
+done
+
+echo "Generating cc-lifecycle.yaml for $CHANNEL_NAME"
+cc_lifecycle_file="$DEST_DIR/cc-lifecycle.yaml"
+cat <<EOT >"$cc_lifecycle_file"
+type: 1
+value:
+  rule:
+    n_out_of:
+      n: 1
+      rules:
+  identities:
+EOT
+for i in $(seq 0 "$(expr "$NUM_CC_LIFECYCLE" - 1)"); do
+	org_name=$(yq r "$CONFIG_FILE" "channels.$CHANNEL_NAME".chaincode_lifecycle["$i"])
+	msp_id=$(yq r "$ORG_CONFIG_FILE" "peer_organizations.$org_name.msp.id")
+
+	# update the policy file
+	yq w -i "$cc_lifecycle_file" "value.rule.n_out_of.rules[$i].signed_by" "$i"
+	yq w -i "$cc_lifecycle_file" "value.identities[$i].principal_classification" "ROLE"
+	yq w -i "$cc_lifecycle_file" "value.identities[$i].principal.msp_identifier" "$msp_id"
+	yq w -i "$cc_lifecycle_file" "value.identities[$i].principal.role" "MEMBER"
 done
 
 # NOTE: convert all YAML file to JSON files

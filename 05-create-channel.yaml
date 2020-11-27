@@ -55,13 +55,13 @@
         path: "{{ channel_config_path }}/{{ channel_name }}_config_update.bin"
         organizations: "{{ channel_members }}"
         capabilities:
-          application: "{{ vars['channels'][channel_name]['capabilities']['application'] | default('V1_4_2') }}"
-          # channel: "{{ vars['channels'][channel_name]['capabilities']['channel'] | default('V1_4_3') }}" #doesn't work for now
-          orderer: "{{ vars['channels'][channel_name]['capabilities']['orderer'] | default('V1_4_2') }}"
+          application: "{{ vars['channels'][channel_name]['capabilities']['application'] | default('V2_0') }}"
         policies:
           Admins: "{{ lookup('file', '{{ channel_policies_dir }}/admins-policy.yaml') | from_yaml }}"
           Readers: "{{ lookup('file', '{{ channel_policies_dir }}/readers-policy.yaml') | from_yaml }}"
           Writers: "{{ lookup('file', '{{ channel_policies_dir }}/writers-policy.yaml') | from_yaml }}"
+          Endorsement: "{{ lookup('file', '{{ channel_policies_dir }}/default-cc-endorsers.yaml') | from_yaml }}"
+          LifecycleEndorsement: "{{ lookup('file', '{{ channel_policies_dir }}/cc-lifecycle.yaml') | from_yaml }}"
 
     - name: Peer organizations signs the channel configuration update for the new channel
       vars:

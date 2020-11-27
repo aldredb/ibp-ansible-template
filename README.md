@@ -1,6 +1,6 @@
 # Automated Deployment with Ansible
 
-Tested on IBP Ansible Collection version: **0.0.48**
+Tested on IBP Ansible Collection version: **0.0.52**
 
 ## Requirements
 
@@ -137,7 +137,7 @@ ansible-playbook 07-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=o
 ansible-playbook 07-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=org1-org2-channel os_org_name=os peer_org_name=org2" -v
 ```
 
-### Install and instantiate chaincode (Optional)
+### Install and instantiate chaincode for V1.4 Capability (Optional)
 
 In real scenarios, installation and instantiation is performed by a toolchain. The following script is created for the sake of completeness
 
