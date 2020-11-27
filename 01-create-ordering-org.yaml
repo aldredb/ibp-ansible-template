@@ -144,11 +144,11 @@
         api_key: "{{ org.console.api_key | default(omit) }}"
         api_secret: "{{ org.console.api_secret | default(omit) }}"
         name: "{{ org.orderer.name }}"
-      register: result
+      register: os_info
 
     - name: Store the ordering service in a file
       copy:
-        content: "{{ result.ordering_service | to_nice_json }}"
+        content: "{{ os_info.ordering_service | to_nice_json }}"
         dest: "{{ components_path }}/{{ org.orderer.name }}_Orderer.json"
 
     - name: Retrieve MSP
@@ -158,9 +158,73 @@
         api_key: "{{ org.console.api_key | default(omit) }}"
         api_secret: "{{ org.console.api_secret | default(omit)}}"
         name: "{{ org.msp.name }}"
-      register: result
+      register: msp_info
 
     - name: Store MSP into a file
       copy:
-        content: "{{ result.organization | to_nice_json }}"
+        content: "{{ msp_info.organization | to_nice_json }}"
         dest: "{{ components_path }}/{{ org.msp.name }}_MSP.json"
+
+    # This section onwards will enable V2 Capability
+    - name: Fetch the system channel configuration
+      ibm.blockchain_platform.channel_config:
+        api_endpoint: "{{ org.console.api_endpoint }}"
+        api_authtype: "{{ org.console.api_authtype }}"
+        api_key: "{{ org.console.api_key | default(omit) }}"
+        api_secret: "{{ org.console.api_secret | default(omit)}}"
+        operation: fetch
+        ordering_service: "{{ org.orderer.name }}"
+        identity: "{{ wallet_path }}/{{ org.msp.admin }}.json"
+        msp_id: "{{ org.msp.id }}"
+        name: "{{ os_info.ordering_service[0].system_channel_id }}"
+        path: "{{ channel_config_path }}/original_config.bin"
+
+    - name: Create a copy of the system channel configuration
+      copy:
+        src: "{{ channel_config_path }}/original_config.bin"
+        dest: "{{ channel_config_path }}/updated_config.bin"
+
+    - name: Enable Fabric v2.x capabilities
+      ibm.blockchain_platform.channel_capabilities:
+        path: "{{ channel_config_path }}/updated_config.bin"
+        channel: V2_0
+        orderer: V2_0
+
+    - name: Compute the system channel configuration update
+      ibm.blockchain_platform.channel_config:
+        api_endpoint: "{{ org.console.api_endpoint }}"
+        api_authtype: "{{ org.console.api_authtype }}"
+        api_key: "{{ org.console.api_key | default(omit) }}"
+        api_secret: "{{ org.console.api_secret | default(omit)}}"
+        operation: compute_update
+        ordering_service: "{{ org.orderer.name }}"
+        identity: "{{ wallet_path }}/{{ org.msp.admin }}.json"
+        msp_id: "{{ org.msp.id }}"
+        name: "{{ os_info.ordering_service[0].system_channel_id }}"
+        original: "{{ channel_config_path }}/original_config.bin"
+        updated: "{{ channel_config_path }}/updated_config.bin"
+        path: "{{ channel_config_path }}/config_update.bin"
+      register: compute_update
+
+    - name: Sign the system channel configuration update
+      ibm.blockchain_platform.channel_config:
+        operation: sign_update
+        identity: "{{ wallet_path }}/{{ org.msp.admin }}.json"
+        msp_id: "{{ org.msp.id }}"
+        name: "{{ os_info.ordering_service[0].system_channel_id }}"
+        path: "{{ channel_config_path }}/config_update.bin"
+      when: compute_update.path
+
+    - name: Apply the system channel configuration update
+      ibm.blockchain_platform.channel_config:
+        api_endpoint: "{{ org.console.api_endpoint }}"
+        api_authtype: "{{ org.console.api_authtype }}"
+        api_key: "{{ org.console.api_key | default(omit) }}"
+        api_secret: "{{ org.console.api_secret | default(omit)}}"
+        operation: apply_update
+        ordering_service: "{{ org.orderer.name }}"
+        identity: "{{ wallet_path }}/{{ org.msp.admin }}.json"
+        msp_id: "{{ org.msp.id }}"
+        name: "{{ os_info.ordering_service[0].system_channel_id }}"
+        path: "{{ channel_config_path }}/config_update.bin"
+      when: compute_update.path

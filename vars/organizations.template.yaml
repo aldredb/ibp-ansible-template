@@ -12,7 +12,7 @@ ordering_organization:
     ca:
       name: "OS CA"
       zone: tok02
-      version: "1.4.7-3"
+      version: "1.4.9-2"
       admin_name: "OS CA Admin"
       admin_enrollment_id: "admin"
       admin_enrollment_secret: "adminpw"
@@ -46,7 +46,7 @@ ordering_organization:
         # - tok04
         # - tok05
       nodes: 1
-      version: "2.1.1-3"
+      version: "2.2.1-2"
       resource:
         orderer:
           vcpu: 350m
@@ -70,7 +70,7 @@ peer_organizations:
     ca:
       name: "Org1 CA"
       zone: tok04
-      version: "1.4.7-3"
+      version: "1.4.9-2"
       admin_name: "Org1 CA Admin"
       admin_enrollment_id: "admin"
       admin_enrollment_secret: "adminpw"
@@ -107,7 +107,7 @@ peer_organizations:
       - name: Org1 Peer1
         state_db: couchdb
         zone: "tok05"
-        version: "2.1.1-3"
+        version: "2.2.1-2"
         resource:
           peer:
             vcpu: 400m
@@ -140,7 +140,7 @@ peer_organizations:
     ca:
       name: "Org2 CA"
       zone: tok05
-      version: "1.4.7-3"
+      version: "1.4.9-2"
       admin_name: "Org2 CA Admin"
       admin_enrollment_id: "admin"
       admin_enrollment_secret: "adminpw"
@@ -177,7 +177,7 @@ peer_organizations:
       - name: Org2 Peer1
         state_db: couchdb
         zone: "tok04"
-        version: "2.1.1-3"
+        version: "2.2.1-2"
         resource:
           peer:
             vcpu: 400m
@@ -210,7 +210,7 @@ peer_organizations:
     ca:
       name: "Org3 CA"
       zone: tok05
-      version: "1.4.7-3"
+      version: "1.4.9-2"
       admin_name: "Org3 CA Admin"
       admin_enrollment_id: "admin"
       admin_enrollment_secret: "adminpw"
@@ -247,7 +247,7 @@ peer_organizations:
       - name: Org3 Peer1
         state_db: couchdb
         zone: "tok04"
-        version: "2.1.1-3"
+        version: "2.2.1-2"
         resource:
           peer:
             vcpu: 400m
