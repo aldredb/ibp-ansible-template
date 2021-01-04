@@ -7,7 +7,6 @@ set -euo pipefail
 ACTION=
 OPT_BEFORE_CHANNEL=false
 OPT_BEFORE_JOIN=false
-OPT_BEFORE_CHAINCODE=false
 
 function usage() {
 	echo "usage: $0 [OPTIONS] [up|down]" 1>&2
@@ -17,7 +16,6 @@ function usage() {
 	echo "-b  [BREAKPOINT]      Setup until a breakpoint"
 	echo "    before-channel    Setup until channel creation (all ordering, peer orgs created)"
 	echo "    before-join       Setup until peer join channel (all ordering, peer orgs, channel created)"
-	echo "    before-chaincode  Setup until chaincode installation"
 }
 
 function cmd_exists() {
@@ -92,9 +90,6 @@ while getopts ":hb:" opt; do
 			;;
 		before-join)
 			OPT_BEFORE_JOIN=true
-			;;
-		before-chaincode)
-			OPT_BEFORE_CHAINCODE=true
 			;;
 		\?)
 			echo "Invalid FLAGS: --$OPTARG" 1>&2

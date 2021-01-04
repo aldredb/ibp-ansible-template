@@ -137,18 +137,6 @@ ansible-playbook 07-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=o
 ansible-playbook 07-add-anchor-peer-to-channel.yaml --extra-vars "channel_name=org1-org2-channel os_org_name=os peer_org_name=org2" -v
 ```
 
-### Install and instantiate chaincode for V1.4 Capability (Optional)
-
-In real scenarios, installation and instantiation is performed by a toolchain. The following script is created for the sake of completeness
-
-```sh
-ansible-playbook 08-install-chaincode.yaml --extra-vars "peer_org_name=org1 cc_path=chaincodes/marbles@v2.cds" -v
-ansible-playbook 08-install-chaincode.yaml --extra-vars "peer_org_name=org2 cc_path=chaincodes/marbles@v2.cds" -v
-ansible-playbook 08-install-chaincode.yaml --extra-vars "peer_org_name=org3 cc_path=chaincodes/marbles@v2.cds" -v
-
-ansible-playbook 09-instantiate-chaincode.yaml --extra-vars "peer_org_name=org1 channel_name=common-channel cc_name=marbles" -v
-```
-
 ### Utility functions
 
 Create connection profile

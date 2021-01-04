@@ -41,14 +41,6 @@ channels:
       - org2
       - org3
     config_update_policy: 2 # out of total number of operators
-    chaincodes:
-      marbles:
-        version: v2
-        constructor:
-          function: "init"
-          args:
-            - "test"
-          endorsement_policy: OR('org1msp.peer','org2msp.peer')
           
   org1-org2-channel:
     members:
