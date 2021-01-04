@@ -27,7 +27,7 @@
     product_version: 2.5.1
     
     # The version of IBP operator to use
-    operator_version: 20201119
+    operator_version: 20201208
 
     # Domain name of your Kubernetes or OpenShift cluster. 
     # This domain name is used as the base domain name for all ingress or routes 
