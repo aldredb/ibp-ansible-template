@@ -10,6 +10,8 @@ Before running the scripts, you need to make sure to have the following installe
 
 - YAML parser [`yq` (>= 3.4.1)](https://mikefarah.gitbook.io/yq/) - Note: Only `yq` version 3 is supported (version 4 is **NOT** supported)
 
+- [JQ](https://stedolan.github.io/jq/download/)
+
 - Clean up
   
   ```sh
