@@ -8,7 +8,7 @@ Before running the scripts, you need to make sure to have the following installe
 
 - [Ansible and IBP collection](https://ibm-blockchain.github.io/ansible-collection/installation.html#requirements). To force installation of the latest version of the collection, use `ansible-galaxy collection install --force ibm.blockchain_platform`
 
-- YAML parser [`yq` (>= 3.3.2)](https://mikefarah.gitbook.io/yq/)
+- YAML parser [`yq` (>= 3.4.1)](https://mikefarah.gitbook.io/yq/) - Note: Only `yq` version 3 is supported (version 4 is **NOT** supported)
 
 - Clean up
   
