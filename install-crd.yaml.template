@@ -27,7 +27,7 @@
     product_version: 2.5.1
     
     # The version of IBP operator to use
-    webhook_version: 20201208
+    webhook_version: 20210112
 
     # Set to 3600 seconds (1 hour), which should be sufficient for most environments. 
     # You only need to change the value for this variable if you find that 
