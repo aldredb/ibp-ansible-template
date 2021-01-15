@@ -1,6 +1,6 @@
 # Automated Deployment with Ansible
 
-Tested on IBP Ansible Collection version: **0.0.57**
+Tested on IBP Ansible Collection version: **1.0.0**
 
 ## Requirements
 
